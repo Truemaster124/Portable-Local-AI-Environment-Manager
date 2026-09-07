@@ -1,0 +1,14 @@
+name: Windows checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  powershell:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test launcher without starting Unsloth
+        shell: powershell
+        run: .\tests\Test-Launcher.ps1
