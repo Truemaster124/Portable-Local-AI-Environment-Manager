@@ -2,7 +2,7 @@
 
 ![Your models. Ready to move. One SSD holds the model library; the prepared PC provides the local runtime.](docs/assets/portable-ai-hero.png)
 
-<h1 align="center">Portable Local AI Environment Manage</h1>
+<h1 align="center">Portable Local AI Environment Manager</h1>
 
 <p align="center">
   <strong>A privacy-first, plug-and-play workflow for prepared Windows PCs.</strong><br>
@@ -48,7 +48,7 @@ Once launched, **Unsloth discovers supported models from the selected cache**. T
 | **🖱️ One launcher to open** | Open your app with the correct settings, or maintain your own startup script. | Double-click the batch launcher and approve the prompt. PowerShell handles the checks and configuration; an optional helper offers insertion prompts. |
 | **🔁 A repeatable routine across PCs** | Repeat the path configuration and check for mistakes on each machine. | Reuse the same paired library and launch routine on prepared Windows PCs, one at a time. Each PC still needs its own app/runtime setup. |
 
-A careful manual setup or your own script can achieve the same result. This project packages the repeated work into a reusable workflow, reducing opportunities for stale paths and ordinary wrong-drive mistakes. **The benefit is less repeated configuration; no setup-time or inference-speed benchmark is claimed.**
+A careful manual setup or your own script can achieve the same result. This project packages the repeated work into a reusable workflow, reducing opportunities for stale paths and ordinary wrong-drive mistakes. **The benefit is less repeated configuration; no setup-time **
 
 ### Where it earns its place
 
@@ -152,7 +152,7 @@ This is a storage boundary, not a guarantee that user data can never leave the h
 
 It sets `HF_HUB_CACHE` for the **new Unsloth process**, leaving Windows' global environment unchanged. It uses `%LOCALAPPDATA%\PortableLocalAI\HuggingFace` for session credentials, removes inherited raw Hub token variables in the child, and keeps known temporary, auxiliary-cache, and project defaults on the host. Explicit offline settings are preserved.
 
-Known application-state paths must stay inside the current local Windows profile without junctions or symbolic links; failed checks stop the launch. The launcher does not copy models or chats, format drives, kill applications, or configure ComfyUI. Unsloth can still access the network and write to the selected cache during normal use.
+Known application-state paths must stay inside the current local Windows profile without junctions or symbolic links; The launcher does not copy models or chats, format drives, kill applications, or configure ComfyUI. Unsloth can still access the network and write to the selected cache during normal use.
 
 Pairing helps prevent ordinary wrong-drive mistakes; it is not cryptographic authentication or a model-code sandbox. [How the launch works →](docs/design.md)
 
@@ -221,7 +221,8 @@ These checks do not start Unsloth, install the helper, or modify a model drive. 
 
 ---
 
-Created by **Garv Gupta**, with AI assistance. Unsloth and Hugging Face provide the application and model infrastructure; this repository provides the launcher integration. Cover illustration created with AI; workflow graphics are explanatory illustrations.
+Created by **Garv Gupta**, with AI assistance. Unsloth and Hugging Face provide the application and model infrastructure; this repository provides the launcher integration.
+
 
 **License:** a code license has not been selected. Review the [release checklist](docs/release-checklist.md) before publishing a reusable release.
 
