@@ -5,8 +5,8 @@
 <h1 align="center">Portable Local AI Environment Manage</h1>
 
 <p align="center">
-  <strong>Carry your model library. Spend less effort reconnecting it.</strong><br>
-  A Windows launcher that connects an external SSD's model cache to the Unsloth Desktop installed on your PC.
+  <strong>A privacy-first, plug-and-play workflow for prepared Windows PCs.</strong><br>
+  Carry your model library on an external SSD. Automatically configure its cache path for the local Unsloth app, with guarded host-local storage for chats and credentials.
 </p>
 
 <p align="center">
@@ -31,18 +31,24 @@
 
 You move your models off a crowded internal drive. Then you connect the SSD to another computer: yesterday's `F:` is today's `Z:`. The files are there, but your application still needs the right cache location.
 
-**Pair the SSD once. The launcher resolves its current location each time you launch.** It checks the paired drive, asks for your consent, and starts the local Unsloth installation with that model cache.
+**Pair once. Connect. Launch.** The launcher resolves the SSD's current location, checks its pairing marker and volume identity, asks for your consent, and starts the local Unsloth installation with the correct model cache. You do not need to edit paths or environment variables when the drive letter changes.
+
+Once launched, **Unsloth discovers supported models from the selected cache**. The launcher connects the library to the app; recognition still requires complete model files and support in the installed Unsloth version.
 
 ![Manual setup means locating the SSD, selecting the current cache path, and starting the app. After pairing, the launcher resolves the drive and cache path, asks for confirmation, and opens the local app. Both need a prepared PC.](docs/assets/setup-comparison.svg)
 
-| What changes? | Configuring it yourself | With this launcher |
-| :--- | :--- | :--- |
-| **Drive letter changes** | Check and update a path that uses a fixed letter. | Resolve the paired drive's current path at launch. |
-| **Selecting the model cache** | Set the cache through your app or environment workflow. | Supply the paired cache to a fresh Unsloth process. |
-| **Plugging in again** | Open your app or run your own setup script. | Double-click the launcher; optionally install an insertion-prompt helper. |
-| **Using another computer** | Prepare its app/runtime and configure the model location. | Prepare its app/runtime, then use the SSD launcher; select the local app if needed. |
+### Six ways it simplifies the routine
 
-A careful manual setup or your own script can achieve the same result. This project packages the repeated path selection, drive checks, and launch prompt into a reusable workflow. **The benefit is less repeated configuration; no setup-time or inference-speed benchmark is claimed.**
+| Key benefit | Configuring it yourself | With this launcher |
+| :--- | :--- | :--- |
+| **🔌 Plug-and-play after preparation** | Revisit the cache configuration when your storage setup changes. | Pair the SSD once and reuse its configuration on prepared PCs. No repeated drive pairing for a new drive letter. |
+| **🧭 Dynamic drive detection** | Check and update paths that depend on a fixed drive letter. | PowerShell resolves the current drive using the pairing marker and filesystem volume serial. |
+| **⚙️ Automatic paths and environment** | Set the cache through your app or environment workflow. | Build the cache path and set the new app process's environment at launch, leaving global Windows variables unchanged. |
+| **🔒 Privacy-first storage** | Configure model, chat, and credential locations separately. | Share the model cache while keeping known chat and credential paths on the host, with checks before launch. |
+| **🖱️ One launcher to open** | Open your app with the correct settings, or maintain your own startup script. | Double-click the batch launcher and approve the prompt. PowerShell handles the checks and configuration; an optional helper offers insertion prompts. |
+| **🔁 A repeatable routine across PCs** | Repeat the path configuration and check for mistakes on each machine. | Reuse the same paired library and launch routine on prepared Windows PCs, one at a time. Each PC still needs its own app/runtime setup. |
+
+A careful manual setup or your own script can achieve the same result. This project packages the repeated work into a reusable workflow, reducing opportunities for stale paths and ordinary wrong-drive mistakes. **The benefit is less repeated configuration; no setup-time or inference-speed benchmark is claimed.**
 
 ### Where it earns its place
 
@@ -108,6 +114,8 @@ In Unsloth, verify that the active Hub cache points to the SSD. For an existing 
 
 <sub>Illustrated workflow, not a screen recording. <a href="docs/assets/launch-flow.svg">View the static diagram.</a> The optional helper can offer the launch prompt after insertion.</sub>
 
+**Manage the library inside Unsloth.** Use the app's model download and removal controls after verifying that the selected cache is on the SSD. The launcher supplies the storage location; Unsloth manages the model files. Changes to that shared cache affect subsequent users of the drive, while launcher-session credentials remain on the host. [Model-management guide →](docs/models.md)
+
 <details>
 <summary><strong>🔔 Make it more convenient: enable the connection popup</strong></summary>
 
@@ -125,13 +133,15 @@ To disable it, run `Remove-T5-Connection-Popup.cmd`, also available in `%LOCALAP
 
 ## Share the library. Keep application state on each host.
 
+**The intended split is simple: a shared model library, with personal application state kept locally.** The launcher does not copy your chat history or credentials onto the SSD. It routes known chat, authentication, and session-credential paths to the host and stops the launch if its privacy checks fail.
+
 | Travels on the SSD | Stays on each prepared PC |
 | :--- | :--- |
 | Model weights, repositories, and cache metadata | Unsloth installation, runtime, and local chat/authentication state |
 | Model additions and deletions that affect later users | Hugging Face credentials used by launcher sessions |
 | Model names and filesystem timestamps | Launcher logs, temporary files, and session project defaults |
 
-This is the intended storage boundary, not encryption or an incognito session. Existing chats remain on the host. Anything you manually export to the SSD travels with it, and anyone who can read an unencrypted SSD can inspect its files. Keep private models, datasets, tokens, and backups off a drive you share. [Read the privacy boundary →](docs/privacy.md)
+This is a storage boundary, not a guarantee that user data can never leave the host: the launcher does not control network access, cloud synchronization, or manual exports. Existing chats remain on the host; there is no incognito session or automatic cleanup. Anything you save to the SSD travels with it, and anyone who can read an unencrypted SSD can inspect its files. Keep private models, datasets, tokens, and backups off a drive you share. [Read the privacy boundary →](docs/privacy.md)
 
 <a name="questions"></a>
 
