@@ -1,74 +1,195 @@
-# Portable Local AI Launcher
+<a name="top"></a>
 
-Keep a model library on an external SSD and open it with the Unsloth Desktop installed on the computer you're using.
+![Your models. Ready to move. One SSD holds the model library; the prepared PC provides the local runtime.](docs/assets/portable-ai-hero.png)
 
-**Windows prototype · Version 0.2.0 · No model weights included**
+<h1 align="center">Portable Local AI Environment Manage</h1>
 
-[Set up an SSD](docs/setup.md) · [Add or remove models](docs/models.md) · [Privacy](docs/privacy.md) · [Read the code](docs/code-walkthrough.md) · [Publish on GitHub](docs/github.md)
+<p align="center">
+  <strong>Carry your model library. Spend less effort reconnecting it.</strong><br>
+  A Windows launcher that connects an external SSD's model cache to the Unsloth Desktop installed on your PC.
+</p>
 
-## Why I made this
+<p align="center">
+  <a href="#quick-start"><img src="docs/assets/badge-windows.svg" width="109" alt="Windows"></a>
+  <a href="#quick-start"><img src="docs/assets/badge-unsloth.svg" width="158" alt="Unsloth Desktop"></a>
+  <a href="#status"><img src="docs/assets/badge-prototype.svg" width="163" alt="v0.2.0 prototype"></a>
+  <a href="#quick-start"><img src="docs/assets/badge-weights.svg" width="268" alt="No model weights included"></a>
+</p>
 
-My local AI setup was taking up a large part of an internal drive. I moved the model files to a Samsung T5, but copying the files was only half the job: the applications still needed to know where to look, and Windows could assign the SSD a different drive letter on another computer.
+<p align="center">
+  <a href="#why">See the difference</a> ·
+  <a href="#quick-start">Set up your SSD</a> ·
+  <a href="#daily-use">Everyday use</a> ·
+  <a href="#questions">Explore the details</a>
+</p>
 
-This project handles that connection. It pairs a drive with a small configuration file, asks before using it, and launches the local Unsloth installation with the correct model-cache path. The SSD holds the files. The computer still does the inference.
+> **Prototype, with a clear purpose.** The source records 97 passing local automated checks. A complete second-PC test is still pending. [See the evidence and remaining tests →](docs/testing.md)
 
-It's a Windows integration project, not a new model or inference engine. The T5 name remains in the launcher's filenames because that's the drive this started with; the pairing step is not tied to that brand.
+<a name="why"></a>
 
-## Current status
+## Your SSD moves. Windows drive letters do too.
 
-The original, device-specific prototype was used to check cache discovery on one Windows laptop. This repository is the generalized version, with its own helper directory and a new pairing step. Its automated checks pass locally; a full second-computer test is still pending. See [testing notes](docs/testing.md) for the distinction.
+You move your models off a crowded internal drive. Then you connect the SSD to another computer: yesterday's `F:` is today's `Z:`. The files are there, but your application still needs the right cache location.
 
-## Before you start
+**Pair the SSD once. The launcher resolves its current location each time you launch.** It checks the paired drive, asks for your consent, and starts the local Unsloth installation with that model cache.
 
-- Use Windows with Windows PowerShell 5.1 and Unsloth Desktop already installed and initialized locally.
-- Use an existing NTFS or exFAT external volume with enough free space. Start with an empty model folder, or reuse a complete Hugging Face hub cache. Loose weight files aren't a Hub cache. Preserve snapshot files and their links when copying an existing collection. [Cache layout reference](https://huggingface.co/docs/huggingface_hub/guides/manage-cache).
-- Your computer still needs enough RAM/VRAM and a supported runtime for the chosen model. Carrying a larger library does not make every model runnable.
-- Back up important files. Don't use the same writable cache from several computers at once.
+![Manual setup means locating the SSD, selecting the current cache path, and starting the app. After pairing, the launcher resolves the drive and cache path, asks for confirmation, and opens the local app. Both need a prepared PC.](docs/assets/setup-comparison.svg)
 
-No model weights, Unsloth installer, accounts, or drivers are included.
+| What changes? | Configuring it yourself | With this launcher |
+| :--- | :--- | :--- |
+| **Drive letter changes** | Check and update a path that uses a fixed letter. | Resolve the paired drive's current path at launch. |
+| **Selecting the model cache** | Set the cache through your app or environment workflow. | Supply the paired cache to a fresh Unsloth process. |
+| **Plugging in again** | Open your app or run your own setup script. | Double-click the launcher; optionally install an insertion-prompt helper. |
+| **Using another computer** | Prepare its app/runtime and configure the model location. | Prepare its app/runtime, then use the SSD launcher; select the local app if needed. |
 
-## First use
+A careful manual setup or your own script can achieve the same result. This project packages the repeated path selection, drive checks, and launch prompt into a reusable workflow. **The benefit is less repeated configuration; no setup-time or inference-speed benchmark is claimed.**
 
-1. Copy `T5-Launcher/` and all five root-level `.cmd` files from this repository to the **root of the external SSD**. Keep the folder name. Don't overwrite a launcher already there; see the note below.
-2. Double-click `Configure-SSD.cmd`. Enter the cache folder relative to the drive, for example `AI\Models\huggingface\hub`. Check the drive and folder shown, then type `PAIR`.
-3. Fully quit Unsloth, including any background inference session. Double-click `Start-Unsloth-With-T5.cmd` and accept the prompt. If the installation isn't found, choose the computer's `unsloth-studio.exe`.
-4. For an existing cache, check **On Device**. For an empty cache, open **Model hub** and download a small supported model after verifying the active cache location is on the SSD. Only recognized, complete models can be used.
+### Where it earns its place
 
-Pairing creates `T5-Launcher/device.json` and the cache folder if missing. Do not commit the pairing file. You pair the drive once; you don't need to repeat pairing when its drive letter changes. Run `Check-Setup.cmd` for a read-only diagnostic before your first launch.
+| 💾 A larger library | 🔁 A change of desk | 🎓 A repeatable demo |
+| :--- | :--- | :--- |
+| Keep model weights on external storage instead of using more internal space. | Carry the same complete cache between prepared Windows PCs, one at a time. | Use a documented launch routine, with a check command before you begin. |
 
-**Already using the original T5 prototype?** Keep it in place. This source checkout is not an automatic upgrade package. The generic helper uses a different name, but the SSD filenames overlap. Test on a separate drive before planning an upgrade, and don't enable both watchers together.
+**The SSD carries the models. Each PC supplies Unsloth, its runtime, and the RAM/VRAM to run them.** Model recognition still depends on the installed Unsloth version and a complete, supported cache.
 
-## Want a popup when you plug it in?
+<a name="quick-start"></a>
 
-Run `Install-T5-Connection-Popup.cmd` from the paired SSD once on each Windows account where you want this feature. The helper runs locally, starts at sign-in, and checks every five seconds. It asks before launching Unsloth. The drive connected during installation is skipped; use the manual launcher for that first session.
+## From source files to your first launch
 
-On a new computer without the helper, plugging in the SSD does **not** run anything automatically. Double-click the launcher instead. This is not USB AutoRun.
+**Have these ready:**
 
-To disable popups, run `Remove-T5-Connection-Popup.cmd`. It removes only this helper's verified Startup shortcut and tells the watcher to stop. It retains the helper files and logs. You can also find the removal command in `%LOCALAPPDATA%\PortableLocalAI`.
+- **A prepared Windows PC:** Windows PowerShell 5.1, Unsloth Desktop installed and initialized, suitable hardware, and permission to run these scripts.
+- **An external SSD:** an existing NTFS or exFAT volume with enough free space. NTFS was used in the original prototype; exFAT still needs a real-device test.
+- **A model folder:** start empty, or reuse a complete Hugging Face Hub cache. Loose weight files are not a Hub cache; preserve snapshot files and links when copying one. [Cache preparation details →](docs/setup.md)
 
-Before unplugging, stop generation, unload models, quit Unsloth and its backend, then use Windows' eject option. A loaded model may still read from disk later.
+Back up important files. Model weights, the Unsloth installer, accounts, and drivers are not included.
 
-## What the launcher changes
+### 1 · Copy the launcher to the SSD
 
-It sets the Hub cache path in the **new Unsloth process**, not in Windows' global environment. This version uses `%LOCALAPPDATA%\PortableLocalAI\HuggingFace` for Hugging Face credentials, clears inherited raw Hub token variables in the child, and keeps temporary files, auxiliary caches and launcher-session project defaults on the host. You may need to sign in again for gated models. Explicit offline settings remain unchanged.
+Download this repository using **Code → Download ZIP**, extract it, and copy `T5-Launcher/` plus all five root-level `.cmd` files to the **root of your SSD**:
 
-Known application-state paths must remain inside the current Windows profile without junctions or symbolic links. If these checks fail, the launcher stops. Existing local Unsloth chats remain local; they are not erased. This is not an incognito session.
+```text
+Your SSD/
+├── T5-Launcher/
+├── Configure-SSD.cmd
+├── Check-Setup.cmd
+├── Start-Unsloth-With-T5.cmd
+├── Install-T5-Connection-Popup.cmd
+└── Remove-T5-Connection-Popup.cmd
+```
 
-It doesn't copy models or chats, stop applications, format drives, or configure ComfyUI. Unsloth itself can still download or modify files during normal operation. This is a storage selector, not a network blocker or a read-only sandbox.
+Keep these names. The `T5` filenames come from the original Samsung T5 prototype; pairing is not tied to that brand. Use a separate test drive if a launcher is already installed there.
 
-The [design notes](docs/design.md) explain the paths and backend. The [demo guide](docs/demo.md) is a short walkthrough for a classroom or interview.
+### 2 · Pair once, check once
 
-## Sharing the drive between people
+Double-click **`Configure-SSD.cmd`**. Choose the cache folder relative to the SSD, for example:
 
-| Shared on the SSD | Kept on each prepared host |
-| --- | --- |
-| Model repositories, weights and cache metadata | Unsloth's local chat/authentication state |
-| Added models and the effect of model deletions | Hugging Face credentials for launcher sessions |
-| Model filenames and filesystem timestamps | Launcher logs, temporary files and project defaults |
+```text
+AI\Models\huggingface\hub
+```
 
-Anyone with access to this unencrypted SSD can inspect its files. Don't put private fine-tunes, chat exports, datasets, tokens or backups there. The launcher doesn't scrub an old drive, prevent an explicit export to it, or protect you from an untrusted PC. See the [privacy boundary](docs/privacy.md).
+Review the drive and folder, then type **`PAIR`**. Setup creates the cache folder if needed and writes `T5-Launcher/device.json`. Keep that device-specific file out of Git. A changed drive letter does not require pairing again.
 
-## Running the checks
+Run **`Check-Setup.cmd`** for a read-only diagnostic before your first launch.
+
+### 3 · Launch, verify, try a model
+
+Fully quit Unsloth **and its background backend**. Double-click **`Start-Unsloth-With-T5.cmd`** and accept the prompt. If asked, select this PC's installed `unsloth-studio.exe`.
+
+In Unsloth, verify that the active Hub cache points to the SSD. For an existing library, check **On Device**. For an empty library, open **Model hub**, download one small supported model, then load it and try a prompt. Gated models may require your own sign-in on this PC.
+
+[Full setup guide →](docs/setup.md) · [Add or remove models →](docs/models.md)
+
+<a name="daily-use"></a>
+
+## Next session: connect → launch → choose a model
+
+![Illustrated launch flow: connect the paired SSD, open the launcher and approve its prompt, then choose a recognized model in Unsloth on the prepared PC.](docs/assets/launch-flow.gif)
+
+<sub>Illustrated workflow, not a screen recording. <a href="docs/assets/launch-flow.svg">View the static diagram.</a> The optional helper can offer the launch prompt after insertion.</sub>
+
+<details>
+<summary><strong>🔔 Make it more convenient: enable the connection popup</strong></summary>
+
+Run `Install-T5-Connection-Popup.cmd` from the paired SSD once on each Windows account where you want prompts.
+
+The local helper starts at sign-in and checks every five seconds. On a newly detected matching drive, it asks before launching Unsloth. Declining stays quiet for that insertion. The drive connected during installation is skipped; use the manual launcher for that first session.
+
+A computer without the helper needs a double-click on the launcher. Plugging in alone does not run anything; this is not USB AutoRun. This version supports one paired drive per account's helper.
+
+To disable it, run `Remove-T5-Connection-Popup.cmd`, also available in `%LOCALAPPDATA%\PortableLocalAI`. It removes its verified Startup shortcut and stops the watcher; helper files and logs remain.
+
+</details>
+
+**Before unplugging:** stop downloads and generation, unload models, quit Unsloth and its backend, then use Windows' eject action. Keep the SSD connected throughout a session; loaded models can still read from disk. Use one computer at a time with the writable cache.
+
+## Share the library. Keep application state on each host.
+
+| Travels on the SSD | Stays on each prepared PC |
+| :--- | :--- |
+| Model weights, repositories, and cache metadata | Unsloth installation, runtime, and local chat/authentication state |
+| Model additions and deletions that affect later users | Hugging Face credentials used by launcher sessions |
+| Model names and filesystem timestamps | Launcher logs, temporary files, and session project defaults |
+
+This is the intended storage boundary, not encryption or an incognito session. Existing chats remain on the host. Anything you manually export to the SSD travels with it, and anyone who can read an unencrypted SSD can inspect its files. Keep private models, datasets, tokens, and backups off a drive you share. [Read the privacy boundary →](docs/privacy.md)
+
+<a name="questions"></a>
+
+## Curious? Open the details.
+
+<details>
+<summary><strong>🧭 What does the launcher actually change?</strong></summary>
+
+It sets `HF_HUB_CACHE` for the **new Unsloth process**, leaving Windows' global environment unchanged. It uses `%LOCALAPPDATA%\PortableLocalAI\HuggingFace` for session credentials, removes inherited raw Hub token variables in the child, and keeps known temporary, auxiliary-cache, and project defaults on the host. Explicit offline settings are preserved.
+
+Known application-state paths must stay inside the current local Windows profile without junctions or symbolic links; failed checks stop the launch. The launcher does not copy models or chats, format drives, kill applications, or configure ComfyUI. Unsloth can still access the network and write to the selected cache during normal use.
+
+Pairing helps prevent ordinary wrong-drive mistakes; it is not cryptographic authentication or a model-code sandbox. [How the launch works →](docs/design.md)
+
+</details>
+
+<details>
+<summary><strong>🛠️ My models are missing, or the launcher stops. What should I check?</strong></summary>
+
+| Symptom | Start here |
+| :--- | :--- |
+| Models are missing | Verify the active SSD cache path and that its Hub snapshots are complete and supported. Loose GGUF files are not converted into Hub entries. |
+| Unsloth is already running | Quit the app and backend fully, then relaunch from the SSD. |
+| The app cannot be found | Choose the host-installed `unsloth-studio.exe`; an app copy on the model SSD is rejected. |
+| A privacy/path check fails | Run `Check-Setup.cmd` and review the layout. Do not delete links or move databases just to silence the check. |
+| A gated model needs login | Use your own credentials on this host; the launcher does not import them from the SSD. |
+
+Diagnostic output contains local paths; redact it before sharing. [Setup help →](docs/setup.md)
+
+</details>
+
+<details>
+<summary><strong>🧳 Can I use any PC, work offline, or upgrade the original prototype?</strong></summary>
+
+**Another PC:** it must have Windows, a working Unsloth installation, supported runtime, and sufficient RAM/VRAM. These scripts do not install dependencies. macOS, Linux, network/redirected profiles, and nonstandard runtime layouts are outside the current compatibility scope.
+
+**Offline use:** the model and runtime must already be complete, and the installed application must support your intended offline workflow. The launcher preserves explicit offline settings; it does not block network access or guarantee offline operation.
+
+**Original T5 prototype:** keep the working installation in place. This source is not an automatic upgrade package; SSD filenames overlap, and helper upgrades can refuse differing files. Test separately and do not enable both watchers together.
+
+</details>
+
+<a name="status"></a>
+
+## Built to be inspected
+
+**Current version: 0.2.0 · Windows prototype**
+
+| Evidence in the source | Still to validate |
+| :--- | :--- |
+| 97 local automated checks recorded in the testing notes | A full end-to-end run on a second prepared PC |
+| An installed-backend cache-routing probe | Real UI download/delete and shared-state acceptance tests |
+| Cache discovery in the original one-laptop prototype | Current Unsloth versions and a real exFAT device |
+
+The original prototype used Unsloth Desktop `0.1.806-beta`. Model discovery is not proof that every model will run. A GitHub Actions workflow is included; this README makes no claim about its current remote result. [Testing notes →](docs/testing.md)
+
+<details>
+<summary><strong>🧪 Run the included automated checks</strong></summary>
 
 From the repository root:
 
@@ -76,18 +197,22 @@ From the repository root:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\Test-Launcher.ps1
 ```
 
-The tests do not start Unsloth, install a helper, or modify a model drive. The execution-policy flag applies only to that process; it is not a reason to bypass your institution's device policy. A Windows GitHub Actions workflow is included but has not run remotely yet.
+These checks do not start Unsloth, install the helper, or modify a model drive. The execution-policy flag applies only to this process; follow your organization's device policy. See [the code walkthrough](docs/code-walkthrough.md) for the implementation and [the release checklist](docs/release-checklist.md) for acceptance testing.
 
-## Limits worth knowing
+</details>
 
-This version supports one paired drive per account's popup helper. It does not convert loose GGUF files into Hub cache entries, install missing dependencies, or guarantee discovery in every Unsloth release. The inspected prototype used Unsloth Desktop `0.1.806-beta`; later versions need retesting.
+## Pick your next step
 
-Windows is the only target of these scripts. macOS, Linux, network/redirected profiles and nonstandard runtime layouts are not covered by a universal compatibility promise. Model download/delete support is provided by the installed Unsloth version, not a private API client in this launcher.
+| Get it working | Show how it works | Explore the project |
+| :--- | :--- | :--- |
+| [Set up an SSD](docs/setup.md) | [Follow the demo guide](docs/demo.md) | [Read the code](docs/code-walkthrough.md) |
+| [Manage models](docs/models.md) | [Understand the storage boundary](docs/privacy.md) | [Design notes](docs/design.md) |
+| [Troubleshoot setup](docs/setup.md) | [Review test evidence](docs/testing.md) | [Changelog](CHANGELOG.md) · [Publishing guide](docs/github.md) |
 
-There are no performance benchmarks yet. An external SSD makes the files portable, not the GPU, RAM, drivers, or application installation.
+---
 
-## Credits and release notes
+Created by **Garv Gupta**, with AI assistance. Unsloth and Hugging Face provide the application and model infrastructure; this repository provides the launcher integration. Cover illustration created with AI; workflow graphics are explanatory illustrations.
 
-Project by Garv Gupta, developed with AI assistance. Unsloth and Hugging Face provide the application and model infrastructure; this repository contains the launcher integration, not their source code or model weights.
+**License:** a code license has not been selected. Review the [release checklist](docs/release-checklist.md) before publishing a reusable release.
 
-A code license has not been selected yet. Before publishing a reusable release, complete the [release checklist](docs/release-checklist.md), including the license decision and a real second-PC test.
+<p align="center"><a href="#top">Back to top ↑</a></p>
