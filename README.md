@@ -5,7 +5,7 @@
   <img src="docs/assets/portable-ai-banner.png" width="100%" alt="Portable Local AI Environment Manager: an external model drive connected to a prepared Windows PC, with colorful sticker accents">
 </p>
 
-<p align="center"><sub>Concept illustration. Model labels are decorative; loose GGUF files are not automatically converted into a supported Hub cache.</sub></p>
+<p align="center"><sub>Concept illustration: a portable model library connected to a prepared Windows PC.</sub></p>
 
 <p align="center"><strong>Carry your model library. Keep your personal workspace on your PC.</strong></p>
 
