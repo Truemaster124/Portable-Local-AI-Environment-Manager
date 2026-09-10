@@ -1,6 +1,18 @@
 # Changes
 
-## Unreleased
+## 0.2.1-rc.1 - 2026-09-11
+
+- Add the MIT license and rewrite the README with clearer setup steps, launch options, and expandable help. Keep both existing illustrations unchanged.
+- Reject invalid configuration types, reserved Windows names, network executables, and redirected executable paths. Read pairing files as UTF-8 and limit their size.
+- Write helper state atomically, tolerate brief file-sharing conflicts, and prevent log failures from stopping the watcher.
+- Recheck the SSD after installation consent and the executable before launch. Stop a watcher launch if the helper is disabled while its prompt is open.
+- Return useful readiness results and failing exit codes from diagnostics; preserve those codes through the command wrappers.
+- Scope prompt and watcher locks to the Windows user. Release the process handle after launch, and treat a failed launch record as a warning after the app has already started.
+- Expand automated coverage from 97 to 145 checks and run CI in both Windows PowerShell and PowerShell 7. Rerun the seven-check installed-backend probe.
+
+This candidate still needs the physical acceptance tests in `docs/testing.md` before a production release.
+
+## Documentation cleanup - 2026-09-10
 
 - Remove a duplicate README and eight unused documentation graphics.
 - Shorten the README and consolidate outdated publishing instructions into the release checklist.

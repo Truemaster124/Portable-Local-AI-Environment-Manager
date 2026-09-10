@@ -4,7 +4,7 @@ param(
     [string]$DisplayName = 'My AI SSD'
 )
 $ErrorActionPreference = 'Stop'
-Import-Module (Join-Path $PSScriptRoot 'T5Launcher.psm1') -Force
+Import-Module (Join-Path $PSScriptRoot 'T5Launcher.psm1') -Force -DisableNameChecking
 
 try {
     # Running from the drive root makes the launcher independent of its drive letter.

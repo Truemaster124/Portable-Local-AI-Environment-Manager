@@ -1,22 +1,24 @@
 # Testing notes
 
-Latest automated source check: 10 September 2026. The repository cleanup passed all 97 checks under Windows PowerShell 5.1.26100.9444. The installed-backend probe and original prototype results below were recorded on 8 September 2026 and were not rerun for this documentation cleanup.
+Latest local validation: **11 September 2026**, for **0.2.1-rc.1**. This is a release candidate; the physical acceptance checks below are still required before a production release.
 
 ## This repository
 
-`tests/Test-Launcher.ps1` passed **97 checks** under Windows PowerShell **5.1.26100.9444**.
+`tests/Test-Launcher.ps1` passed **145 checks** under Windows PowerShell **5.1.26100.9444** and PowerShell **7.6.5**. The 10 September baseline had 97 checks.
 
 The checks cover script parsing, malformed configuration, unsafe relative paths, registry path parsing, path construction with several simulated drive letters, child-only credential isolation, preserved offline settings, and direct process configuration without shell interpolation. Module-scoped test doubles exercise wrong-drive rejection, executable-volume rejection, declined consent, the already-running guard and disconnecting during the prompt. Privacy checks cover redirected private state, token-variable removal and blocking launch on preflight failure. One read-only native Windows check resolves the host PowerShell executable's volume.
+
+The new regressions cover reserved Windows filenames, typed configuration fields, UTF-8 pairing names, oversized or incomplete JSON, atomic state replacement, locked files and logs, disabled watcher state during consent, and readiness failures. Helper lifecycle tests use a fake shortcut service and disposable files to check disconnects, ownership mismatches, and uninstall behavior. A simulated successful launch checks the process boundary and saved cache path without starting Unsloth. Real subprocess tests verify unpaired diagnostics and the `.cmd` wrapper's exit code.
 
 Cache-preparation tests create disposable fixtures in the ignored `test-results/` directory: a missing cache, an empty cache, an unrelated folder, a file at the intended destination and a basic snapshot layout. They verify that planning is read-only and preserves a refused folder's existing content. These fixtures are retained locally, not packaged for release.
 
 These are local automated checks. Simulating `F:` or `Z:` is not the same as physically reconnecting a drive with a new letter. The tests deliberately do not start Unsloth, pair a real SSD, or install the watcher.
 
-The GitHub Actions workflow is prepared, but there is no remote CI result or badge to claim yet.
+The [Windows checks workflow](https://github.com/Truemaster124/Portable-Local-AI-Environment-Manager/actions/workflows/test.yml) runs the suite in both Windows PowerShell and PowerShell 7 on pushes and pull requests. Check the result for the commit you plan to use; CI is separate from the physical acceptance tests.
 
 ## Installed-backend probe
 
-The optional `tests/Probe-Unsloth-Cache.ps1` passed seven checks using the installed Unsloth Python, its `utils/hf_cache_settings.py` and the installed Hub library: explicit cache selection, the Hub path, the auxiliary cache path, a host-local token path, removal of inherited raw Hub tokens, and the Hub library's resolved credential-home and token-file constants. It uses a synthetic cache location and does not scan or modify models. A separate read-only host privacy preflight also passed.
+On 11 September 2026, `tests/Probe-Unsloth-Cache.ps1` passed all seven checks using the installed Unsloth Python, its `utils/hf_cache_settings.py` and the installed Hub library: explicit cache selection, the Hub path, the auxiliary cache path, a host-local token path, removal of inherited raw Hub tokens, and the Hub library's resolved credential-home and token-file constants. It uses a synthetic cache location and does not scan or modify models. A separate read-only host privacy preflight also passed.
 
 The installed source was inspected for model operations: `hub/services/models/downloads.py` takes its cache from `get_hf_cache_paths()`, and `hub/services/models/deletion.py` resolves the selected cache owner before deletion. This supports the routing design. No real UI download or deletion was exercised for this release.
 

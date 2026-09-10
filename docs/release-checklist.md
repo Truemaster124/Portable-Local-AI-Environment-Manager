@@ -2,7 +2,7 @@
 
 Use this checklist before tagging a reusable release. Repository publication alone does not establish compatibility or completion of the acceptance tests.
 
-- [ ] Select a license for the original launcher code and add its full text as `LICENSE`.
+- [x] Add the [MIT License](../LICENSE) for the original launcher code and documentation; retain third-party attribution.
 - [ ] Run the automated checks against the exact source being released and inspect the Windows Actions result.
 - [ ] Complete and record the [manual acceptance tests](testing.md), including a second prepared PC with a different drive letter.
 - [ ] Verify a disposable model's download and deletion through Unsloth and check for unintended transfer of chats or credentials between hosts.

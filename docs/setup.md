@@ -41,6 +41,8 @@ It also creates a new `device.json` marker. Pair once per drive. A changed drive
 
 Run `Check-Setup.cmd`. It reports whether the paired root is valid, any detected Unsloth installation, running sessions and the host privacy preflight. This command is read-only, but its output contains local paths; redact them before sharing it.
 
+The report includes `readyToLaunch` and a `problems` list. The command exits with code `1` when a check fails, including a missing pairing file; code `0` means its readiness checks passed. If Unsloth is not found automatically, you can still select its installed executable during launch. A passing report does not test whether a model can load.
+
 Next, double-click `Start-Unsloth-With-T5.cmd` and accept the prompt. If a file picker appears, select the **host-installed** `unsloth-studio.exe`, not an old app copy on the SSD. No administrator account is required by the launcher.
 
 If a known private-state directory is redirected through a junction or outside the host profile, stop and review the layout. Do not delete links or move databases just to silence the warning.
@@ -58,6 +60,8 @@ Run `Install-T5-Connection-Popup.cmd` from the paired drive. Accept the installa
 At the next insertion, the helper should prompt within a few seconds. Decline means no launch. Another computer needs its own one-time helper installation, or you can simply use the manual launcher there.
 
 To disable it, run `Remove-T5-Connection-Popup.cmd`. Source files and logs remain locally; the paired SSD and its models are not removed. This version deliberately refuses in-place upgrades when helper files differ.
+
+If you have an older helper, keep that working installation until you have tested the new version separately. Do not run both watchers together or overwrite the retained helper files to force an upgrade.
 
 ## 7. Finish a session
 

@@ -1,6 +1,20 @@
 # Custom T5 integration, not Unsloth source code. Compatible with Windows PowerShell 5.1.
 Set-StrictMode -Version Latest
 
+function Get-T5Version { '0.2.1-rc.1' }
+
+function Get-T5MutexName {
+    param([ValidateSet('Prompt','Watch')][string]$Purpose)
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    try { 'Local\PortableLocalAI-' + $Purpose + '-' + $identity.User.Value }
+    finally { $identity.Dispose() }
+}
+
+function Test-T5ReservedName {
+    param([string]$Path)
+    $Path -match '(?i)(^|\\)(CON|PRN|AUX|NUL|CLOCK\$|CONIN\$|CONOUT\$|COM[1-9\u00B9\u00B2\u00B3]|LPT[1-9\u00B9\u00B2\u00B3])(?:\.|\\|$)'
+}
+
 function Get-T5LocalDirectory {
     # Separate from the original, device-specific prototype.
     Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'PortableLocalAI'
@@ -28,10 +42,13 @@ function Get-T5HostPaths {
 
 function Assert-T5PlainPath {
     param([string]$Path)
-    if ($Path -notmatch '^[A-Za-z]:\\' -or $Path.Substring(2) -match '[:*?"<>|\x00-\x1F]') {
+    if ($Path -notmatch '^[A-Za-z]:\\' -or $Path.Substring(2) -match '[:*?"<>|/\x00-\x1F]') {
         throw 'Expected an absolute local Windows path.'
     }
     if ($Path -match '(^|\\)\.{1,2}(\\|$)') { throw 'Path traversal is not allowed.' }
+    if ((Test-T5ReservedName $Path.Substring(3)) -or $Path -match '[. ](\\|$)') {
+        throw 'Reserved Windows names and trailing dots or spaces are not allowed.'
+    }
     $cursor = [IO.Path]::GetFullPath($Path)
     while ($cursor) {
         try { $item = Get-Item -LiteralPath $cursor -Force -ErrorAction Stop }
@@ -67,7 +84,9 @@ function Assert-T5HostPrivacy {
         Assert-T5PlainPath ([IO.Path]::Combine($paths.Studio,$relative))
     }
     foreach ($relative in @('token','stored_tokens')) { Assert-T5PlainPath ([IO.Path]::Combine($paths.HuggingFace,$relative)) }
-    foreach ($relative in @('app-location.json','last-launch.json','helper.log','watcher-status.json','installed.json','Cache')) {
+    foreach ($relative in @('app-location.json','last-launch.json','helper.log','watcher-status.json','installed.json',
+        'T5Launcher.ps1','T5Launcher.psm1','device.json','Remove-T5-Connection-Popup.cmd',
+        'Cache','Cache\xet','Cache\assets','Cache\datasets','Cache\modules')) {
         Assert-T5PlainPath ([IO.Path]::Combine($paths.Local,$relative))
     }
     if (-not (Test-Path -LiteralPath $paths.Studio -PathType Container)) {
@@ -77,26 +96,40 @@ function Assert-T5HostPrivacy {
 
 function Assert-T5DeviceConfig {
     param($Config)
+    if ($Config -isnot [pscustomobject]) { throw 'device.json must contain one JSON object.' }
     foreach ($field in @('schemaVersion','deviceId','volumeSerial','displayName','modelRelativePath')) {
         if (-not $Config -or -not $Config.PSObject.Properties[$field]) { throw "Missing configuration field: $field" }
     }
     $id = [guid]::Empty
-    if ($Config.schemaVersion -ne 1 -or -not [guid]::TryParse([string]$Config.deviceId, [ref]$id) -or $id -eq [guid]::Empty -or
+    if (($Config.schemaVersion -isnot [int] -and $Config.schemaVersion -isnot [long]) -or $Config.schemaVersion -ne 1 -or
+        $Config.deviceId -isnot [string] -or $Config.volumeSerial -isnot [string] -or
+        -not [guid]::TryParse([string]$Config.deviceId, [ref]$id) -or $id -eq [guid]::Empty -or
         [string]$Config.deviceId -notmatch '^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$' -or
         [string]$Config.volumeSerial -notmatch '^[0-9A-Fa-f]{8}$') { throw 'Invalid device identity in device.json.' }
-    if ($Config.displayName -isnot [string] -or $Config.displayName.Length -lt 1 -or $Config.displayName.Length -gt 80 -or
+    if ($Config.displayName -isnot [string] -or [string]::IsNullOrWhiteSpace($Config.displayName) -or $Config.displayName.Length -gt 80 -or
         $Config.displayName -match '[\x00-\x1F]') { throw 'Use a short, single-line display name.' }
     $path = $Config.modelRelativePath
     if ($path -isnot [string] -or [string]::IsNullOrWhiteSpace($path) -or [IO.Path]::IsPathRooted($path) -or
         $path -match '[:*?"<>|\x00-\x1F]' -or $path -match '/' -or $path -match '(^|\\)\.{1,2}(\\|$)' -or
-        $path -match '(^\\|\\$|\\\\)' -or @($path.Split('\') | Where-Object { $_ -match '[. ]$' }).Count -gt 0) {
+        $path -match '(^\\|\\$|\\\\)' -or (Test-T5ReservedName $path) -or
+        @($path.Split('\') | Where-Object { $_ -match '[. ]$' }).Count -gt 0) {
         throw 'modelRelativePath must be a normal relative folder path, without traversal or wildcards.'
     }
 }
 
 function Get-T5DeviceConfig {
     param([string]$Directory)
-    $config = Get-Content -LiteralPath (Join-Path $Directory 'device.json') -Raw | ConvertFrom-Json
+    $path = Join-Path $Directory 'device.json'
+    Assert-T5PlainPath $path
+    if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+        throw 'This drive is not paired. Run Configure-SSD.cmd from the SSD root first.'
+    }
+    if ((Get-Item -LiteralPath $path -ErrorAction Stop).Length -gt 16384) { throw 'device.json is too large; expected a small pairing file.' }
+    $json = Get-Content -LiteralPath $path -Raw -Encoding UTF8 -ErrorAction Stop
+    if ([string]::IsNullOrWhiteSpace($json) -or -not $json.TrimStart().StartsWith('{')) {
+        throw 'device.json must contain one JSON object.'
+    }
+    $config = $json | ConvertFrom-Json -ErrorAction Stop
     Assert-T5DeviceConfig $config
     $config
 }
@@ -160,7 +193,7 @@ function Get-T5ContainingVolumeSerial {
 function Test-T5Root {
     param([string]$Root, $Config)
     try {
-        if (-not [IO.Path]::IsPathRooted($Root)) { return $false }
+        if ($Root -notmatch '^[A-Za-z]:\\$') { return $false }
         $marker = Join-Path $Root 'T5-Launcher\device.json'
         if (-not (Test-Path -LiteralPath $marker -PathType Leaf)) { return $false }
         $observed = Get-T5DeviceConfig (Join-Path $Root 'T5-Launcher')
@@ -184,9 +217,11 @@ function Find-T5Roots {
 function Test-T5Executable {
     param([string]$Path, [string]$Root)
     try {
-        if (-not [IO.Path]::IsPathRooted($Path)) { return $false }
+        if ($Path -notmatch '^[A-Za-z]:\\') { return $false }
         $full = [IO.Path]::GetFullPath($Path)
         if ([IO.Path]::GetFileName($full) -ine 'unsloth-studio.exe') { return $false }
+        if (([IO.DriveInfo]::new([IO.Path]::GetPathRoot($full))).DriveType -ne [IO.DriveType]::Fixed) { return $false }
+        Assert-T5PlainPath $Path
         if (-not (Test-Path -LiteralPath $full -PathType Leaf)) { return $false }
         # Do not run the legacy application copy from this SSD, even through its C: mount.
         if ($Root -and $full.StartsWith($Root.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) { return $false }
@@ -253,6 +288,7 @@ function Get-T5RunningUnsloth {
 
 function New-T5StartInfo {
     param([string]$Executable, [string]$Root, $Config)
+    Assert-T5DeviceConfig $Config
     $info = [Diagnostics.ProcessStartInfo]::new()
     $info.FileName = $Executable
     $info.WorkingDirectory = [IO.Path]::GetDirectoryName($Executable)
@@ -297,16 +333,24 @@ function Show-T5Message {
         [Windows.Forms.MessageBoxButtons]::OK, [Windows.Forms.MessageBoxIcon]::Information)
 }
 
+function Start-T5Process {
+    param([Diagnostics.ProcessStartInfo]$StartInfo)
+    [Diagnostics.Process]::Start($StartInfo)
+}
+
 function Invoke-T5Launch {
-    param([string]$Root, $Config)
-    $guard = [Threading.Mutex]::new($false, 'Local\PortableLocalAI-Prompt')
+    [CmdletBinding()]
+    param([string]$Root, $Config, [switch]$FromWatcher)
+    $guard = [Threading.Mutex]::new($false, (Get-T5MutexName 'Prompt'))
     $owned = $false
     try {
         try { $owned = $guard.WaitOne(0) } catch [Threading.AbandonedMutexException] { $owned = $true }
         if (-not $owned) { return }
+        if ($FromWatcher -and -not (Test-T5HelperEnabled $Config)) { return }
         if (-not (Test-T5Root $Root $Config)) { throw 'The expected T5 model collection is unavailable. No application was started.' }
         $accepted = Show-T5Message -Question -Message ("Allow Unsloth to access the models on " + $Config.displayName + "?`r`n`r`nModel folder: " + (Join-Path $Root $Config.modelRelativePath) + "`r`n`r`nYes launches this PC's installed Unsloth with that cache for this session. Recognized models should appear under On Device. No model files or chats are copied. Unsloth may access the network and write to its selected cache during normal use, subject to your existing offline settings. Keep the SSD connected while using it.")
         if (-not $accepted) { return }
+        if ($FromWatcher -and -not (Test-T5HelperEnabled $Config)) { return }
         $running = @(Get-T5RunningUnsloth)
         if ($running.Count -gt 0) {
             Show-T5Message "Unsloth or one of its inference processes is already running. Save your work and fully quit Unsloth, including its background backend, then double-click Start-Unsloth-With-T5.cmd again. Nothing was stopped or changed."
@@ -326,21 +370,27 @@ function Invoke-T5Launch {
                 if (-not (Test-T5Executable $executable $Root)) { throw 'Select a local installed unsloth-studio.exe, not an application copy on the T5.' }
                 $local = Get-T5LocalDirectory
                 [void][IO.Directory]::CreateDirectory($local)
-                @{executable=$executable} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $local 'app-location.json') -Encoding UTF8
+                Write-T5Json (Join-Path $local 'app-location.json') @{executable=$executable}
             } finally { $picker.Dispose() }
         }
         # Recheck after any dialog: the drive can be unplugged while a prompt is open.
         if (-not (Test-T5Root $Root $Config)) { throw 'The T5 was disconnected. Nothing was launched.' }
         if (@(Get-T5RunningUnsloth).Count -gt 0) { throw 'Unsloth started while the dialog was open. Close it and retry.' }
+        if ($FromWatcher -and -not (Test-T5HelperEnabled $Config)) { return }
+        if (-not (Test-T5Executable $executable $Root)) { throw 'The selected Unsloth executable is no longer a valid local installation.' }
         Assert-T5HostPrivacy $Config
         $info = New-T5StartInfo $executable $Root $Config
         foreach ($key in @('HF_HOME','HF_XET_CACHE','HF_ASSETS_CACHE','HF_DATASETS_CACHE','HF_MODULES_CACHE','TEMP','UNSLOTH_STUDIO_DOCUMENTS_HOME','UNSLOTH_STUDIO_PROJECTS_HOME')) {
             Assert-T5PlainPath $info.EnvironmentVariables[$key]
             [void][IO.Directory]::CreateDirectory($info.EnvironmentVariables[$key])
         }
-        $launched = [Diagnostics.Process]::Start($info)
-        @{time=(Get-Date).ToString('o'); executable=$executable; processId=$launched.Id; modelCache=$info.EnvironmentVariables['HF_HUB_CACHE']} |
-            ConvertTo-Json | Set-Content -LiteralPath (Join-Path (Get-T5LocalDirectory) 'last-launch.json') -Encoding UTF8
+        $launched = Start-T5Process $info
+        try {
+            Write-T5Json (Join-Path (Get-T5LocalDirectory) 'last-launch.json') @{
+                time=(Get-Date).ToString('o'); executable=$executable; processId=$launched.Id; modelCache=$info.EnvironmentVariables['HF_HUB_CACHE']
+            }
+        } catch { Write-Warning 'Unsloth started, but its launch record could not be saved.' }
+        finally { if ($launched) { $launched.Dispose() } }
     } finally {
         if ($owned) { $guard.ReleaseMutex() }
         $guard.Dispose()
@@ -348,11 +398,84 @@ function Invoke-T5Launch {
 }
 
 function Write-T5Log {
+    [CmdletBinding()]
     param([string]$Message)
-    $log = Join-Path (Get-T5LocalDirectory) 'helper.log'
-    # Keep bounded logs without deleting old files or touching model storage.
-    if ((Test-Path -LiteralPath $log) -and (Get-Item -LiteralPath $log).Length -gt 262144) { return }
-    ((Get-Date).ToString('o') + ' ' + $Message) | Add-Content -LiteralPath $log -Encoding UTF8
+    try {
+        $log = Join-Path (Get-T5LocalDirectory) 'helper.log'
+        Assert-T5PlainPath $log
+        # Logging must not terminate the watcher when the log is full or locked.
+        if ((Test-Path -LiteralPath $log) -and (Get-Item -LiteralPath $log -ErrorAction Stop).Length -ge 262144) { return }
+        ((Get-Date).ToString('o') + ' ' + $Message) | Add-Content -LiteralPath $log -Encoding UTF8 -ErrorAction Stop
+    } catch { Write-Warning 'The helper could not write its diagnostic log.' }
+}
+
+function Write-T5Json {
+    param([string]$Path, $Value)
+    Assert-T5PlainPath $Path
+    $parent = [IO.Path]::GetDirectoryName([IO.Path]::GetFullPath($Path))
+    $temporary = Join-Path $parent ('.portable-ai-' + [guid]::NewGuid().ToString('N') + '.tmp')
+    $created = $false
+    try {
+        $bytes = [Text.UTF8Encoding]::new($false).GetBytes(($Value | ConvertTo-Json -Depth 10) + "`r`n")
+        $stream = [IO.File]::Open($temporary, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
+        $created = $true
+        try { $stream.Write($bytes, 0, $bytes.Length); $stream.Flush($true) } finally { $stream.Dispose() }
+        for ($attempt = 0; $attempt -lt 6; $attempt++) {
+            Assert-T5PlainPath $Path
+            try {
+                if ([IO.File]::Exists($Path)) { [IO.File]::Replace($temporary, $Path, [NullString]::Value) }
+                else { [IO.File]::Move($temporary, $Path) }
+                break
+            } catch {
+                $failure = $_.Exception
+                if ($failure.InnerException) { $failure = $failure.InnerException }
+                $windowsError = $failure.HResult -band 0xFFFF
+                # A watcher read or antivirus scan may briefly hold the destination.
+                if ($attempt -eq 5 -or $windowsError -notin @(32,33,1175)) { throw }
+                Start-Sleep -Milliseconds (25 * ($attempt + 1))
+            }
+        }
+    } finally {
+        # Only remove the unique sibling temporary file created by this call.
+        if ($created -and [IO.File]::Exists($temporary)) { [IO.File]::Delete($temporary) }
+    }
+}
+
+function Test-T5HelperEnabled {
+    param($Config)
+    try {
+        $path = Join-Path (Get-T5LocalDirectory) 'installed.json'
+        Assert-T5PlainPath $path
+        $record = Get-Content -LiteralPath $path -Raw -Encoding UTF8 -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+        return ($record.deviceId -is [string] -and $record.deviceId -eq $Config.deviceId -and
+            $record.enabled -is [bool] -and $record.enabled)
+    } catch { return $false }
+}
+
+function Get-T5SetupStatus {
+    param([string]$Root, $Config)
+    $problems = [Collections.Generic.List[string]]::new()
+    $rootValid = Test-T5Root $Root $Config
+    if (-not $rootValid) { $problems.Add('Run the launcher from the root of the connected, paired SSD.') }
+    $privacy = 'passed'
+    try { Assert-T5HostPrivacy $Config } catch { $privacy = $_.Exception.Message; $problems.Add($privacy) }
+    $installed = @()
+    $running = @()
+    $connected = @()
+    try { $connected = @(Find-T5Roots $Config) } catch { $problems.Add('Connected drives could not be inspected.') }
+    try {
+        $installed = @(Find-T5Unsloth $Root)
+        if ($installed.Count -eq 0) { $problems.Add('Unsloth was not found automatically. Select the installed executable when launching.') }
+    } catch { $problems.Add('The installed Unsloth location could not be checked.') }
+    try {
+        $running = @(Get-T5RunningUnsloth)
+        if ($running.Count -gt 0) { $problems.Add('Fully quit Unsloth and its backend before launching with the SSD.') }
+    } catch { $problems.Add('Running processes could not be inspected; launch is blocked.') }
+    [pscustomobject]@{
+        version=Get-T5Version; powershell=$PSVersionTable.PSVersion.ToString(); readyToLaunch=($problems.Count -eq 0);
+        expectedDevice=$Config.deviceId; scriptRootValid=$rootValid; connectedRoots=$connected;
+        installedUnsloth=$installed; runningUnsloth=$running; hostPrivacy=$privacy; problems=@($problems.ToArray()); hostPaths=Get-T5HostPaths
+    }
 }
 
 Export-ModuleMember -Function *-T5*
