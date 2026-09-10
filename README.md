@@ -136,7 +136,7 @@ To disable prompts, run `Remove-T5-Connection-Popup.cmd`. It removes the helper'
 The SSD holds your model library and cache metadata. The launcher keeps known chat, account, credential, temporary-file, and project-default locations on the current PC. It leaves existing local chats in place and stops the launch if those location checks fail.
 
 <p align="center">
-  <img src="docs/assets/privacy-and-storage.png" width="100%" alt="A Samsung T7 Shield holds the model library and Hub cache; the connected Lenovo Legion PC keeps known chat, credential, project, and temporary-file locations on the host. Files deliberately exported to the SSD travel with it.">
+  <img src="docs/assets/portable-ai-workflow.png" width="100%" alt="A Lenovo Legion laptop running Unsloth connects to a blue Samsung T7 Shield SSD. Connect the paired SSD, launch and confirm, then choose a model. Model files stay on the drive; known chats and credentials stay on the PC. Files saved to the SSD travel with it.">
 </p>
 
 Anything you deliberately save or export to the SSD still travels with it. The launcher does not encrypt the drive, block network access, or control cloud synchronization. Check for private datasets, credentials, exports, and backups before lending the drive to someone else.
