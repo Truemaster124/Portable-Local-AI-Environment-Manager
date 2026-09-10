@@ -3,17 +3,25 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 jobs:
-  powershell:
+  windows-powershell:
+    name: Windows PowerShell 5.1
     runs-on: windows-latest
     timeout-minutes: 10
-    strategy:
-      fail-fast: false
-      matrix:
-        shell: [powershell, pwsh]
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Test launcher without starting Unsloth
-        shell: ${{ matrix.shell }}
+        shell: powershell
+        run: .\tests\Test-Launcher.ps1
+  powershell-core:
+    name: PowerShell 7
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Test launcher without starting Unsloth
+        shell: pwsh
         run: .\tests\Test-Launcher.ps1
