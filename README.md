@@ -1,4 +1,11 @@
+
 # Portable Local AI Environment Manager
+
+<p align="center">
+  <img src="docs/assets/portable-ai-banner.png" width="100%" alt="Portable Local AI Environment Manager: an external model drive connected to a prepared Windows PC, with colorful sticker accents">
+</p>
+
+<p align="center"><sub>Concept illustration. Model labels are decorative; loose GGUF files are not automatically converted into a supported Hub cache.</sub></p>
 
 <p align="center"><strong>Carry your model library. Keep your personal workspace on your PC.</strong></p>
 
@@ -7,12 +14,6 @@
 <p align="center">
   <a href="#get-started">Get started</a> &nbsp;·&nbsp; <a href="#how-it-works">How it works</a> &nbsp;·&nbsp; <a href="#privacy-and-storage">Privacy</a> &nbsp;·&nbsp; <a href="#help-and-documentation">Help</a>
 </p>
-
-<p align="center">
-  <img src="docs/assets/samsung-t5.jpg" width="560" alt="A Samsung T5 external SSD, the drive used in the original project">
-</p>
-
-<p align="center"><sub>Photo by <a href="https://www.flickr.com/people/87296837@N00">Tony Webster</a>, via <a href="https://commons.wikimedia.org/wiki/File:Samsung_T5_Portable_External_SSD_(Solid_State_Drive)_(43544308485).jpg">Wikimedia Commons</a> · <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a> · Image unchanged</sub></p>
 
 **Version 0.2.0 · Windows prototype · No model weights included**
 
@@ -31,6 +32,12 @@ It is useful if you want to keep a library off your internal drive or carry it b
 The launcher checks the paired drive marker and filesystem volume serial, finds the current cache location, and sets the paths for the new Unsloth process. If Windows changes the drive from `D:` to `E:`, you do not need to edit the configuration. Windows’ global environment variables stay unchanged.
 
 Unsloth handles model discovery, downloads, and removal. The launcher supplies the cache location and checks that known personal-data paths remain on the host. An optional connection prompt can make subsequent launches easier.
+
+<p align="center">
+  <img src="docs/assets/portable-ai-workflow.png" width="100%" alt="Three-step workflow: connect the paired SSD, run the launcher to resolve its cache path, and open the installed Unsloth application on the PC">
+</p>
+
+<p align="center"><sub>Illustrated workflow, not actual application screenshots. Requires a prepared Windows PC; see the privacy section for storage limits.</sub></p>
 
 ## Get started
 
@@ -145,6 +152,17 @@ These tests do not launch Unsloth, install the helper, or modify a model drive. 
 
 ## Credits and license
 
-Created by **Garv Gupta**, with AI assistance. Unsloth and Hugging Face provide the application and model infrastructure; this project provides the launcher integration. The SSD photograph is credited above.
+Created by **Garv Gupta**, with AI assistance. Unsloth and Hugging Face provide the application and model infrastructure; this project provides the launcher integration. The banner and workflow are AI-assisted illustrations. The original SSD photograph and its attribution are below.
+
+<details>
+<summary>Original SSD photograph and attribution</summary>
+
+<p align="center">
+  <img src="docs/assets/samsung-t5.jpg" width="560" alt="A Samsung T5 external SSD, the drive used in the original project">
+</p>
+
+<p align="center"><sub>Photo by <a href="https://www.flickr.com/people/87296837@N00">Tony Webster</a>, via <a href="https://commons.wikimedia.org/wiki/File:Samsung_T5_Portable_External_SSD_(Solid_State_Drive)_(43544308485).jpg">Wikimedia Commons</a> · <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a> · Image unchanged</sub></p>
+
+</details>
 
 A code license has not yet been selected. See the [release checklist](docs/release-checklist.md) before publishing a reusable release.
