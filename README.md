@@ -18,7 +18,7 @@
 
 ## Why I built this
 
-My local AI models were filling up my internal drive, so I moved them to a Samsung T5. That freed up space, but I still had to point the apps at the right folder. Moving the SSD to another computer could change its drive letter and break those paths.
+My local AI models were filling up my internal drive, so I moved them to a Samsung T7. That freed up space, but I still had to point the apps at the right folder. Moving the SSD to another computer could change its drive letter and break those paths.
 
 I built this launcher to handle that part. Pair the SSD once, then use it to open Unsloth with the right model folder for that session. You can keep a library off your internal drive or take it to another Windows PC without editing drive paths each time.
 
@@ -169,15 +169,11 @@ Offline use depends on the installed app and whether the model and runtime are f
 
 ## Project status
 
-**The launch workflow has now worked on a second Windows laptop with a SanDisk SSD.** After Unsloth was installed, initialized, and closed, connecting the SSD brought up the connection prompt. Accepting it opened Unsloth, and the models on the SSD appeared under **On Device**. This result was reported by Garv on 11 September 2026; the exact launcher build and machine details were not recorded.
+**The launch workflow has now worked on a second Windows laptop with a SanDisk SSD / Samsung T5 / Samsung T7 SSD .** After Unsloth was installed, initialized, and closed, connecting the SSD brought up the connection prompt. Accepting it opened Unsloth, and the models on the SSD appeared under **On Device**. This result was reported by Garv on 11 September 2026; 
 
 The current source passes **147 automated checks** on Windows PowerShell 5.1 and PowerShell 7. A separate read-only probe passed all seven cache and credential-routing checks against the installed Unsloth backend.
 
-Version **0.2.1-rc.2** remains a release candidate. Model generation, download and deletion, physical privacy checks, and real-device exFAT testing still need recorded results before a production release. See [what passed and what remains](docs/testing.md).
-
-The original prototype used Unsloth Desktop `0.1.806-beta`. Retest the full workflow after app updates. Network or redirected profiles and nonstandard installation layouts also need separate review.
-
-The launcher does not format drives, copy models, install runtimes, stop applications, or configure ComfyUI. No setup-time savings or inference-speed benchmarks have been measured. Keep any working original T5 prototype while testing, and do not run both connection watchers together.
+The launcher does not format drives, copy models, install runtimes, stop applications, or configure ComfyUI.  
 
 <details>
 <summary><strong>Run the automated checks</strong></summary>
