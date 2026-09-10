@@ -1,6 +1,6 @@
 # Portable Local AI Environment Manager
 
-A Windows launcher that connects an external SSD's model library to the Unsloth Desktop installed on your computer. Pair the drive once; the launcher resolves its current location and configures the model-cache path for each new session.
+Keep your model library on an external SSD and use it with Unsloth Desktop on your Windows PC. Pair the SSD once, then launch from the drive. The launcher finds its current location and sets the model-cache path for the session—even when Windows assigns a different drive letter.
 
 <p align="center">
   <img src="docs/assets/samsung-t5.jpg" width="640" alt="A Samsung T5 portable external SSD">
@@ -14,10 +14,10 @@ A Windows launcher that connects an external SSD's model library to the Unsloth 
 
 ## What it simplifies
 
-- **Changing drive letters:** identify the paired SSD using its marker and filesystem volume serial, then resolve the current cache path.
-- **Repeated configuration:** set paths in the new Unsloth process without changing Windows' global environment variables.
-- **Launching the library:** double-click the launcher and confirm; optionally enable a prompt when the paired SSD is connected.
-- **Separating storage:** keep the shared model cache on the SSD and known chat, credential, and session-state paths on the host.
+- **No fixed drive letter:** the launcher identifies the paired SSD and finds its cache, so a change from `D:` to `E:` does not require editing paths.
+- **Less repeated setup:** the launcher sets the cache path each time you open Unsloth, without changing Windows' global environment variables.
+- **A simple daily routine:** connect the SSD, double-click the launcher, and confirm. You can also enable a connection prompt on each prepared PC.
+- **Separate personal data:** the model cache stays on the SSD; known chat, credential, and session-state paths stay on the computer.
 
 The SSD supplies storage. Each computer still needs a working Unsloth installation, its runtime, and enough RAM/VRAM for the selected model. Unsloth discovers and manages supported, complete models; the launcher supplies the cache location. No setup-time or inference-speed benchmark is claimed.
 
