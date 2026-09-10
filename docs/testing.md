@@ -38,6 +38,14 @@ On 11 September 2026, `tests/Probe-Unsloth-Cache.ps1` passed all seven checks us
 
 The installed source was inspected for model operations: `hub/services/models/downloads.py` takes its cache from `get_hf_cache_paths()`, and `hub/services/models/deletion.py` resolves the selected cache owner before deletion. This supports the routing design. No real UI download or deletion was exercised for this release.
 
+## Compatibility and app updates
+
+The launcher uses the Unsloth Desktop installation on the current PC. The historical version below describes the original test environment; it is not a required version or a guarantee that every newer version behaves the same way.
+
+After updating Unsloth, fully close the app and its backend, then run `Check-Setup.cmd` from the paired SSD. Launch again, confirm the selected Hub cache and **On Device** model list, and try a prompt with a small supported model. If the update changes model management or storage, repeat the download, deletion, and privacy checks in the [manual acceptance record](#manual-acceptance-record).
+
+Network or redirected Windows profiles and nonstandard installation layouts are not covered by the recorded physical test. If a path or privacy check fails, follow the [setup guide](setup.md) before proceeding.
+
 ## What came from the original prototype
 
 The device-specific predecessor was checked on one laptop with Unsloth Desktop `0.1.806-beta`. A read-only probe using its installed backend's cache-resolution code discovered 29 cached repositories, with 10 cache warnings. Discovery is not proof that all 29 models can load or run. Those warnings need separate investigation.

@@ -169,11 +169,15 @@ Offline use depends on the installed app and whether the model and runtime are f
 
 ## Project status
 
-**The launch workflow has now worked on a second Windows laptop with a SanDisk SSD / Samsung T5 / Samsung T7 SSD .** After Unsloth was installed, initialized, and closed, connecting the SSD brought up the connection prompt. Accepting it opened Unsloth, and the models on the SSD appeared under **On Device**. This result was reported by Garv on 11 September 2026; 
+**The launch workflow has worked on a second prepared Windows laptop.** Connecting a SanDisk SSD brought up the connection prompt. Accepting it opened Unsloth, and the SSD's models appeared under **On Device**. Garv reported this result on **11 September 2026**.
+
+Pairing is not tied to a drive brand. Compatible Samsung T5, Samsung T7, SanDisk, and other external SSDs use the same setup steps.
 
 The current source passes **147 automated checks** on Windows PowerShell 5.1 and PowerShell 7. A separate read-only probe passed all seven cache and credential-routing checks against the installed Unsloth backend.
 
-The launcher does not format drives, copy models, install runtimes, stop applications, or configure ComfyUI.  
+[Testing and compatibility](docs/testing.md) covers the recorded results, remaining physical tests, and checks to repeat after an Unsloth update.
+
+The launcher does not format drives, copy models, install runtimes, stop applications, or configure ComfyUI.
 
 <details>
 <summary><strong>Run the automated checks</strong></summary>
