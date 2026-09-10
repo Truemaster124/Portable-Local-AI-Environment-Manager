@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Portable Local AI launcher">
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="#10213e"/>
+  <rect x="13" y="13" width="230" height="230" rx="51" fill="none" stroke="#284564" stroke-width="4"/>
+  <rect x="48" y="64" width="160" height="132" rx="24" fill="#183957" stroke="#65d9ef" stroke-width="9"/>
+  <path d="M72 160h112" fill="none" stroke="#65d9ef" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="80" cy="179" r="5" fill="#65d9ef"/>
+  <path d="M113 91l43 27-43 27z" fill="#ffca71" stroke="#ffca71" stroke-width="6" stroke-linejoin="round"/>
+</svg>

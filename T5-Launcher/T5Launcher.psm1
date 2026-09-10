@@ -1,7 +1,7 @@
 # Custom T5 integration, not Unsloth source code. Compatible with Windows PowerShell 5.1.
 Set-StrictMode -Version Latest
 
-function Get-T5Version { '0.2.1-rc.2' }
+function Get-T5Version { '0.2.1-rc.3' }
 
 function Get-T5MutexName {
     param([ValidateSet('Prompt','Watch')][string]$Purpose)
@@ -18,6 +18,98 @@ function Test-T5ReservedName {
 function Get-T5LocalDirectory {
     # Separate from the original, device-specific prototype.
     Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'PortableLocalAI'
+}
+
+function Invoke-T5ShortcutLaunch {
+    param($Config)
+    $roots = @(Find-T5Roots $Config)
+    if ($roots.Count -eq 0) { throw 'Connect your paired SSD, then open Portable Local AI again.' }
+    if ($roots.Count -ne 1) { throw 'More than one drive matches this pairing. Connect only the intended SSD and try again.' }
+    # Use the same consent, running-app and privacy checks as the SSD command.
+    Invoke-T5Launch $roots[0] $Config
+}
+
+function Get-T5DesktopShortcutPaths {
+    $local = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'PortableLocalAI-Launcher'
+    $desktop = [Environment]::GetFolderPath('DesktopDirectory')
+    $profileRoot = (Get-T5HostPaths).Profile.TrimEnd('\') + '\'
+    foreach ($path in @($local,$desktop)) {
+        Assert-T5PlainPath $path
+        if (-not ([IO.Path]::GetFullPath($path)).StartsWith($profileRoot,[StringComparison]::OrdinalIgnoreCase)) {
+            throw 'The desktop shortcut needs a Desktop and AppData within this local Windows profile.'
+        }
+    }
+    [pscustomobject]@{Local=$local; Link=(Join-Path $desktop 'Portable Local AI.lnk')}
+}
+
+function Install-T5DesktopShortcut {
+    param([string]$SourceDirectory, $Config)
+    $sourceRoot = [IO.Path]::GetFullPath((Join-Path $SourceDirectory '..'))
+    if (-not (Test-T5Root $sourceRoot $Config)) { throw 'Run Create-Desktop-Shortcut.cmd from the root of the paired SSD.' }
+    Assert-T5HostPrivacy $Config
+    $paths = Get-T5DesktopShortcutPaths
+    $names = @('T5Launcher.ps1','T5Launcher.psm1','device.json','portable-ai.ico')
+    Assert-T5PlainPath $paths.Local
+    Assert-T5PlainPath $paths.Link
+    if (Test-Path -LiteralPath $paths.Local) {
+        if (-not (Test-Path -LiteralPath $paths.Local -PathType Container)) { throw 'The shortcut installation path is occupied by a file.' }
+        if (@(Get-ChildItem -LiteralPath $paths.Local -Force | Where-Object { $_.Name -notin $names }).Count) {
+            throw 'The shortcut folder contains unrecognized files. Nothing was overwritten.'
+        }
+    }
+    # Read and validate every file before changing anything. A different local
+    # version is retained; upgrading it should be a deliberate action.
+    $copies = @{}
+    $sha = [Security.Cryptography.SHA256]::Create()
+    try {
+        foreach ($name in $names) {
+            $source = Join-Path $SourceDirectory $name
+            $destination = Join-Path $paths.Local $name
+            Assert-T5PlainPath $source
+            Assert-T5PlainPath $destination
+            $bytes = [IO.File]::ReadAllBytes($source)
+            if (Test-Path -LiteralPath $destination) {
+                $expectedHash = [BitConverter]::ToString($sha.ComputeHash($bytes)).Replace('-','')
+                if (-not (Test-Path -LiteralPath $destination -PathType Leaf) -or
+                    (Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash -ne $expectedHash) {
+                    throw 'An existing desktop launcher has different files or another pairing. Nothing was overwritten. See docs/setup.md for replacement steps.'
+                }
+            }
+            $copies[$name] = $bytes
+        }
+    } finally { $sha.Dispose() }
+    $powershell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    $arguments = '-NoProfile -STA -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + (Join-Path $paths.Local 'T5Launcher.ps1') + '" -Mode Shortcut'
+    $shell = New-Object -ComObject WScript.Shell
+    $link = $null
+    try {
+        $link = $shell.CreateShortcut($paths.Link)
+        if ((Test-Path -LiteralPath $paths.Link) -and ($link.TargetPath -ine $powershell -or $link.Arguments -cne $arguments)) {
+            throw 'An unrelated Desktop shortcut has the same name. Nothing was overwritten.'
+        }
+        if (-not (Test-T5Root $sourceRoot $Config)) { throw 'The paired SSD changed or was disconnected. The shortcut was not installed.' }
+        Assert-T5HostPrivacy $Config
+        [void][IO.Directory]::CreateDirectory($paths.Local)
+        foreach ($name in $names) {
+            $destination = Join-Path $paths.Local $name
+            if (-not (Test-Path -LiteralPath $destination)) {
+                $stream = [IO.File]::Open($destination,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+                try { $stream.Write($copies[$name],0,$copies[$name].Length) }
+                finally { $stream.Dispose() }
+            }
+        }
+        $link.TargetPath = $powershell
+        $link.Arguments = $arguments
+        $link.WorkingDirectory = $paths.Local
+        $link.IconLocation = (Join-Path $paths.Local 'portable-ai.ico') + ',0'
+        $link.WindowStyle = 7
+        $link.Description = 'Open Unsloth with models on your paired SSD. Asks before launching.'
+        $link.Save()
+    } finally {
+        if ($link) { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($link) }
+        [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($shell)
+    }
+    $paths.Link
 }
 
 function Get-T5HostPaths {

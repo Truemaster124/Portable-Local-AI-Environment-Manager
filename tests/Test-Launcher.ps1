@@ -500,4 +500,179 @@ $launchChecks = & $module {
     Confirm-LaunchCheck ($script:starts -eq 2) 'Invalid executable recheck never reaches process creation'
 } $config $fixtureRoot
 foreach ($name in $launchChecks) { Assert-True $true $name }
+
+$shortcutChecks = & $module {
+    param($Config,$FixtureRoot,$CodeDirectory)
+    function Confirm-ShortcutCheck([bool]$Condition,[string]$Name) {
+        if (-not $Condition) { throw "FAIL: $Name" }
+        $Name
+    }
+    function Confirm-ShortcutThrows([scriptblock]$Action,[string]$Pattern,[string]$Name) {
+        $rejected = $false
+        try { & $Action | Out-Null } catch {
+            if ($_.Exception.Message -notmatch $Pattern) { throw }
+            $rejected = $true
+        }
+        Confirm-ShortcutCheck $rejected $Name
+    }
+    $script:shortcutRoots = @('F:\')
+    $script:shortcutLaunches = @()
+    function Find-T5Roots { param($Config); $script:shortcutRoots }
+    function Invoke-T5Launch { param($Root,$Config); $script:shortcutLaunches += $Root }
+    Invoke-T5ShortcutLaunch $Config
+    $script:shortcutRoots = @('Z:\')
+    Invoke-T5ShortcutLaunch $Config
+    Confirm-ShortcutCheck (($script:shortcutLaunches -join ',') -eq 'F:\,Z:\') 'Desktop launcher resolves the current drive letter on each click'
+    $script:shortcutRoots = @()
+    Confirm-ShortcutThrows { Invoke-T5ShortcutLaunch $Config } 'Connect your paired SSD' 'Missing SSD produces a reconnect instruction'
+    $script:shortcutRoots = @('F:\','Z:\')
+    Confirm-ShortcutThrows { Invoke-T5ShortcutLaunch $Config } 'More than one drive' 'Ambiguous pairings are refused'
+    Confirm-ShortcutCheck ($script:shortcutLaunches.Count -eq 2) 'Missing and ambiguous drives never reach the launch function'
+
+    $source = Join-Path $FixtureRoot 'shortcut source\T5-Launcher'
+    [void][IO.Directory]::CreateDirectory($source)
+    foreach ($name in @('T5Launcher.ps1','T5Launcher.psm1','portable-ai.ico')) {
+        Copy-Item -LiteralPath (Join-Path $CodeDirectory $name) -Destination $source
+    }
+    Write-T5Json (Join-Path $source 'device.json') $Config
+    function Reset-ShortcutFixture {
+        $script:shortcutBase = Join-Path $FixtureRoot ('shortcut ' + [guid]::NewGuid().ToString())
+        $script:shortcutLocal = Join-Path $script:shortcutBase 'local app'
+        $script:shortcutLink = Join-Path $script:shortcutBase 'Portable Local AI.lnk'
+        [void][IO.Directory]::CreateDirectory($script:shortcutBase)
+        $script:shortcutRootChecks = 0
+        $script:disconnectShortcut = $false
+        $script:blockShortcutPrivacy = $false
+    }
+    function Get-T5DesktopShortcutPaths { [pscustomobject]@{Local=$script:shortcutLocal;Link=$script:shortcutLink} }
+    function Test-T5Root {
+        param($Root,$Config)
+        $script:shortcutRootChecks++
+        -not ($script:disconnectShortcut -and $script:shortcutRootChecks -gt 1)
+    }
+    function Assert-T5HostPrivacy { param($Config); if ($script:blockShortcutPrivacy) { throw 'Fixture privacy failure' } }
+
+    Reset-ShortcutFixture
+    $result = Install-T5DesktopShortcut $source $Config
+    Confirm-ShortcutCheck ($result -eq $script:shortcutLink -and (Test-Path -LiteralPath $result)) 'Native Windows shortcut is created only inside the disposable fixture'
+    $shell = New-Object -ComObject WScript.Shell
+    $link = $null
+    try {
+        $link = $shell.CreateShortcut($result)
+        $expectedExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+        Confirm-ShortcutCheck ($link.TargetPath -ieq $expectedExe) 'Shortcut targets host Windows PowerShell'
+        $expectedArguments = '-NoProfile -STA -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + (Join-Path $script:shortcutLocal 'T5Launcher.ps1') + '" -Mode Shortcut'
+        Confirm-ShortcutCheck ($link.Arguments -ceq $expectedArguments) 'Shortcut quotes the local script path and uses dynamic drive discovery'
+        Confirm-ShortcutCheck ($link.IconLocation -eq ((Join-Path $script:shortcutLocal 'portable-ai.ico') + ',0')) 'Shortcut retains its local custom icon'
+        Confirm-ShortcutCheck ($link.WorkingDirectory -eq $script:shortcutLocal -and $link.WindowStyle -eq 7) 'Shortcut retains its working directory and window settings'
+        $allCopiesMatch = $true
+        foreach ($name in @('T5Launcher.ps1','T5Launcher.psm1','device.json','portable-ai.ico')) {
+            if ((Get-FileHash -LiteralPath (Join-Path $source $name)).Hash -ne (Get-FileHash -LiteralPath (Join-Path $script:shortcutLocal $name)).Hash) { $allCopiesMatch = $false }
+        }
+        Confirm-ShortcutCheck $allCopiesMatch 'Local launcher copies match the paired source byte for byte'
+        $null = Install-T5DesktopShortcut $source $Config
+        Confirm-ShortcutCheck (Test-Path -LiteralPath $script:shortcutLink) 'Recreating an identical shortcut succeeds'
+
+        $link.TargetPath = Join-Path $env:SystemRoot 'System32\notepad.exe'
+        $link.Save()
+        $linkHash = (Get-FileHash -LiteralPath $script:shortcutLink).Hash
+        Confirm-ShortcutThrows { Install-T5DesktopShortcut $source $Config } 'unrelated Desktop shortcut' 'An unrelated shortcut is never overwritten'
+        Confirm-ShortcutCheck ((Get-FileHash -LiteralPath $script:shortcutLink).Hash -eq $linkHash) 'Refused shortcut keeps its exact contents'
+    } finally {
+        if ($link) { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($link) }
+        [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($shell)
+    }
+
+    Reset-ShortcutFixture
+    [void][IO.Directory]::CreateDirectory($script:shortcutLocal)
+    $retained = Join-Path $script:shortcutLocal 'T5Launcher.ps1'
+    [IO.File]::WriteAllText($retained,'Retain this different version')
+    Confirm-ShortcutThrows { Install-T5DesktopShortcut $source $Config } 'different files' 'A different local launcher version is refused'
+    Confirm-ShortcutCheck ([IO.File]::ReadAllText($retained) -eq 'Retain this different version' -and -not (Test-Path -LiteralPath $script:shortcutLink)) 'Version mismatch preserves existing files without creating a shortcut'
+
+    Reset-ShortcutFixture
+    [void][IO.Directory]::CreateDirectory($script:shortcutLocal)
+    [IO.File]::WriteAllText((Join-Path $script:shortcutLocal 'unrelated.txt'),'Keep me')
+    Confirm-ShortcutThrows { Install-T5DesktopShortcut $source $Config } 'unrecognized files' 'An occupied installation folder is refused'
+
+    Reset-ShortcutFixture
+    $script:disconnectShortcut = $true
+    Confirm-ShortcutThrows { Install-T5DesktopShortcut $source $Config } 'disconnected' 'A drive disconnected during shortcut preparation is refused'
+    Confirm-ShortcutCheck (-not (Test-Path -LiteralPath $script:shortcutLocal) -and -not (Test-Path -LiteralPath $script:shortcutLink)) 'Disconnect leaves no launcher copy or shortcut'
+
+    Reset-ShortcutFixture
+    $script:blockShortcutPrivacy = $true
+    Confirm-ShortcutThrows { Install-T5DesktopShortcut $source $Config } 'Fixture privacy failure' 'Host privacy failure blocks shortcut installation'
+    Confirm-ShortcutCheck (-not (Test-Path -LiteralPath $script:shortcutLocal)) 'Privacy rejection leaves the destination untouched'
+
+    Reset-ShortcutFixture
+    $junction = Join-Path $script:shortcutBase 'redirected'
+    $null = New-Item -ItemType Junction -Path $junction -Target $source
+    $script:shortcutLocal = $junction
+    Confirm-ShortcutThrows { Install-T5DesktopShortcut $source $Config } 'Redirected path rejected' 'A redirected shortcut destination is refused'
+
+    Reset-ShortcutFixture
+    $missingSource = Join-Path $FixtureRoot 'incomplete shortcut source'
+    [void][IO.Directory]::CreateDirectory($missingSource)
+    Confirm-ShortcutThrows { Install-T5DesktopShortcut $missingSource $Config } 'Could not find|cannot find' 'Missing source files fail before any installation writes'
+    Confirm-ShortcutCheck (-not (Test-Path -LiteralPath $script:shortcutLocal)) 'An incomplete source does not create a local launcher'
+} $config $fixtureRoot $code
+foreach ($name in $shortcutChecks) { Assert-True $true $name }
+
+Add-Type -AssemblyName System.Drawing
+if (-not ('PortableLocalAI.Tests.IconLoader' -as [type])) {
+    Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+namespace PortableLocalAI.Tests {
+    public static class IconLoader {
+        [DllImport("user32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
+        public static extern IntPtr LoadImageW(IntPtr instance, string name, uint type, int width, int height, uint flags);
+        [DllImport("user32.dll")]
+        public static extern bool DestroyIcon(IntPtr icon);
+    }
+}
+'@
+}
+foreach ($size in @(16,32,48,256)) {
+    # LoadImage understands 256px ICO entries; the older .NET constructor can
+    # choose the 128px entry even when asked for 256px.
+    $handle = [PortableLocalAI.Tests.IconLoader]::LoadImageW([IntPtr]::Zero,(Join-Path $code 'portable-ai.ico'),1,$size,$size,16)
+    if ($handle -eq [IntPtr]::Zero) { throw 'Windows could not load the launcher icon.' }
+    $icon = $null
+    try {
+        $icon = [Drawing.Icon]::FromHandle($handle)
+        Assert-True ($icon.Width -eq $size -and $icon.Height -eq $size) "Windows loads the launcher icon at ${size}px"
+    } finally {
+        if ($icon) { $icon.Dispose() }
+        [void][PortableLocalAI.Tests.IconLoader]::DestroyIcon($handle)
+    }
+}
+
+# The new installer entry point must fail safely when run before pairing.
+Copy-Item -LiteralPath (Join-Path $repo 'Create-Desktop-Shortcut.cmd') -Destination (Split-Path $entryFixture -Parent)
+Copy-Item -LiteralPath (Join-Path $code 'Create-Desktop-Shortcut.ps1') -Destination $entryFixture
+$wrapperInfo.Arguments = '/d /c ""' + (Join-Path (Split-Path $entryFixture -Parent) 'Create-Desktop-Shortcut.cmd') + '""'
+$wrapperProcess = [Diagnostics.Process]::Start($wrapperInfo)
+$wrapperOutput = $wrapperProcess.StandardOutput.ReadToEndAsync()
+$wrapperError = $wrapperProcess.StandardError.ReadToEndAsync()
+$wrapperProcess.StandardInput.WriteLine('x')
+$wrapperProcess.StandardInput.Close()
+try {
+    if (-not $wrapperProcess.WaitForExit(15000)) { $wrapperProcess.Kill(); throw 'Shortcut installer wrapper timed out' }
+    Assert-True ($wrapperProcess.ExitCode -eq 1 -and $wrapperError.GetAwaiter().GetResult() -match 'Configure-SSD.cmd') 'Unpaired shortcut installer returns a failing exit code and setup instructions'
+} finally { $wrapperProcess.Dispose() }
+
+# Exercise actual Shortcut mode with an impossible pairing, suppressing its dialog.
+$absentConfig = $example | ConvertFrom-Json
+$absentConfig.deviceId = [guid]::NewGuid().ToString()
+Write-T5Json (Join-Path $entryFixture 'device.json') $absentConfig
+$checkInfo.Arguments = '-NoProfile -ExecutionPolicy Bypass -File "' + (Join-Path $entryFixture 'T5Launcher.ps1') + '" -Mode Shortcut -ConfirmedInstall'
+$checkProcess = [Diagnostics.Process]::Start($checkInfo)
+$checkOutput = $checkProcess.StandardOutput.ReadToEndAsync()
+$checkError = $checkProcess.StandardError.ReadToEndAsync()
+try {
+    if (-not $checkProcess.WaitForExit(15000)) { $checkProcess.Kill(); throw 'Missing-drive shortcut entry point timed out' }
+    Assert-True ($checkProcess.ExitCode -eq 1 -and $checkError.GetAwaiter().GetResult() -match 'Connect your paired SSD') 'Shortcut entry point handles a missing drive without starting Unsloth'
+} finally { $checkProcess.Dispose() }
 Write-Output "`n$script:passed checks passed on PowerShell $($PSVersionTable.PSVersion). No Unsloth process started and no helper installed."

@@ -1,6 +1,6 @@
 # Testing notes
 
-Latest local validation: **11 September 2026**, for **0.2.1-rc.2**. A successful second-laptop launch and model-discovery test has also been reported. The remaining acceptance checks are listed below.
+Latest local validation: **11 September 2026**, for **0.2.1-rc.3**. A successful second-laptop launch and model-discovery test has also been reported. The remaining acceptance checks are listed below.
 
 ## Second-laptop test — reported by Garv
 
@@ -20,13 +20,15 @@ The connection pop-up requires the helper to be installed once on that Windows a
 
 ## This repository
 
-`tests/Test-Launcher.ps1` passed **147 checks** under Windows PowerShell **5.1.26100.9444** and PowerShell **7.6.5**. The 10 September baseline had 97 checks.
+`tests/Test-Launcher.ps1` passed **177 checks** under Windows PowerShell **5.1.26100.9444** and PowerShell **7.6.5**. The 10 September baseline had 97 checks.
 
 The checks cover script parsing, malformed configuration, unsafe relative paths, registry path parsing, path construction with several simulated drive letters, child-only credential isolation, preserved offline settings, and direct process configuration without shell interpolation. Module-scoped test doubles exercise wrong-drive rejection, executable-volume rejection, declined consent, the already-running guard and disconnecting during the prompt. Privacy checks cover redirected private state, token-variable removal and blocking launch on preflight failure. One read-only native Windows check resolves the host PowerShell executable's volume.
 
 The regressions cover reserved Windows filenames, typed configuration fields, UTF-8 pairing names and saved app paths, oversized or incomplete JSON, atomic state replacement, locked files and logs, disabled watcher state during consent, and readiness failures. Helper lifecycle tests use a fake shortcut service and disposable files to check disconnects, ownership mismatches, and uninstall behavior. A simulated successful launch checks the process boundary and saved cache path without starting Unsloth. Real subprocess tests verify unpaired diagnostics and the `.cmd` wrapper's exit code.
 
 Cache-preparation tests create disposable fixtures in the ignored `test-results/` directory: a missing cache, an empty cache, an unrelated folder, a file at the intended destination and a basic snapshot layout. They verify that planning is read-only and preserves a refused folder's existing content. These fixtures are retained locally, not packaged for release.
+
+Desktop-shortcut tests use the native Windows shortcut service inside disposable test folders. They read back the icon, executable, quoted arguments and working directory; check identical reinstalls and refusal to overwrite other files; and exercise missing drives, changed letters, ambiguous pairings, disconnection, privacy failure and redirected destinations. They do not put a shortcut on the user's Desktop.
 
 These are local automated checks. Simulating `F:` or `Z:` is not the same as physically reconnecting a drive with a new letter. The tests deliberately do not start Unsloth, pair a real SSD, or install the watcher.
 
@@ -68,6 +70,7 @@ Checked items below refer to Garv's reported second-laptop run. Unchecked items 
 - [ ] Disconnect while the consent prompt is open. Confirm accepting afterward does not launch against the missing cache.
 - [x] Use the SSD on a second prepared Windows laptop and confirm launch and model discovery.
 - [ ] Record different drive letters on the two PCs and confirm launch after the letter changes.
+- [ ] Create the desktop shortcut on a prepared test PC, verify its icon, and launch through it after reconnecting the SSD with a different letter. Confirm the missing-drive message when unplugged.
 - [ ] Repeat the workflow on a physical exFAT drive and record the result.
 - [ ] Make a harmless, unique test chat on PC A. On PC B, verify it is absent and that no conversation/export was written to the SSD. Inspect files as well as the UI; record limitations of the check.
 - [ ] On PC B, delete only the disposable test model through Unsloth after verifying its SSD cache path. Confirm it is absent on PC A after reconnecting. Do not use an important or sole-copy model for this test.

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="76" viewBox="0 0 390 76" role="img" aria-label="Open launcher file: Start-Unsloth-With-T5.cmd">
+  <rect x="1" y="1" width="388" height="74" rx="16" fill="#10213e" stroke="#65d9ef" stroke-width="2"/>
+  <rect x="20" y="18" width="42" height="40" rx="8" fill="#183957" stroke="#65d9ef" stroke-width="2.5"/>
+  <path d="M27 47h28" stroke="#65d9ef" stroke-width="2" stroke-linecap="round"/>
+  <path d="M37 26l12 8-12 8z" fill="#ffca71" stroke="#ffca71" stroke-linejoin="round"/>
+  <circle cx="29" cy="52" r="1.8" fill="#65d9ef"/>
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <text x="80" y="33" font-size="19" font-weight="600" fill="#ffffff">Open launcher file</text>
+    <text x="80" y="54" font-size="14" fill="#b9cfdf">Start-Unsloth-With-T5.cmd</text>
+    <path d="M349 38h18m-7-7 7 7-7 7" fill="none" stroke="#ffca71" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('Launch','Check','Watch','Install','Uninstall')][string]$Mode = 'Launch',
+    [ValidateSet('Launch','Shortcut','Check','Watch','Install','Uninstall')][string]$Mode = 'Launch',
     [switch]$ConfirmedInstall,
     [switch]$SkipPresentOnce
 )
@@ -145,6 +145,7 @@ try {
             $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
             Invoke-T5Launch $root $device
         }
+        'Shortcut' { Invoke-T5ShortcutLaunch $device }
         'Check' {
             $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
             $status = Get-T5SetupStatus $root $device

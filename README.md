@@ -14,7 +14,7 @@
   <a href="#get-started">Get started</a> &nbsp;·&nbsp; <a href="#how-it-works">How it works</a> &nbsp;·&nbsp; <a href="#privacy-and-storage">Privacy</a> &nbsp;·&nbsp; <a href="#help-and-documentation">Help</a> &nbsp;·&nbsp; <a href="#license">License</a>
 </p>
 
-**Version 0.2.1-rc.2 · Windows release candidate · [MIT license](LICENSE) · No model weights included**
+**Version 0.2.1-rc.3 · Windows release candidate · [MIT license](LICENSE) · No model weights included**
 
 ## Why I built this
 
@@ -51,7 +51,7 @@ NTFS was used in the original prototype; real-device exFAT testing is still pend
 
 ### 1. Copy the launcher to your SSD
 
-[Download the repository ZIP](https://github.com/Truemaster124/Portable-Local-AI-Environment-Manager/archive/refs/heads/main.zip) and extract it. Copy `T5-Launcher/` and the five `.cmd` files to the root of your SSD:
+[Download the repository ZIP](https://github.com/Truemaster124/Portable-Local-AI-Environment-Manager/archive/refs/heads/main.zip) and extract it. Copy `T5-Launcher/` and the six `.cmd` files to the root of your SSD:
 
 ```text
 Your SSD/
@@ -59,6 +59,7 @@ Your SSD/
 ├── Configure-SSD.cmd
 ├── Check-Setup.cmd
 ├── Start-Unsloth-With-T5.cmd
+├── Create-Desktop-Shortcut.cmd
 ├── Install-T5-Connection-Popup.cmd
 └── Remove-T5-Connection-Popup.cmd
 ```
@@ -86,15 +87,36 @@ Run `Check-Setup.cmd` before your first launch. It checks the setup without chan
 
 Some gated models require your own sign-in and access approval on the current PC.
 
+<p align="center">
+  <a href="Start-Unsloth-With-T5.cmd"><img src="docs/assets/launch-button.svg" width="390" alt="Open launcher file: Start-Unsloth-With-T5.cmd"></a>
+</p>
+
+<p align="center"><sub>This button opens the file on GitHub. To launch Unsloth, run the downloaded command from your paired SSD or use the desktop shortcut below.</sub></p>
+
 [Full setup guide](docs/setup.md) · [Adding and removing models](docs/models.md)
 
 ## After the first setup
 
-Connect the SSD and double-click `Start-Unsloth-With-T5.cmd`, or use the optional connection pop-up below. Keep the drive connected while Unsloth is using it.
+Connect the SSD and open **Portable Local AI** from your desktop, double-click `Start-Unsloth-With-T5.cmd` on the drive, or use the optional connection pop-up below. Keep the drive connected while Unsloth is using it.
 
 Check the selected cache before downloading or removing models. Those changes affect the SSD library and will be visible to anyone who uses it next. Use its writable cache on one computer at a time.
 
 Before unplugging, stop downloads and generation, unload models, quit Unsloth and its backend, and eject the drive through Windows.
+
+<details>
+<summary><strong>Add the app icon to my desktop</strong></summary>
+
+<p align="center"><img src="docs/assets/portable-ai-icon.svg" width="72" alt="Portable Local AI app icon: a cyan drive with an amber play button"></p>
+
+After pairing and checking the SSD, run `Create-Desktop-Shortcut.cmd` from it. This creates a **Portable Local AI** shortcut with its own icon for the current Windows account. No administrator access is needed.
+
+The shortcut finds your paired SSD each time you open it, even if its drive letter has changed. It asks before launching Unsloth and uses the same privacy checks as the original command. If the SSD is missing, it asks you to connect it and try again.
+
+The icon and a small launcher copy live in `%LOCALAPPDATA%\PortableLocalAI-Launcher`, so they stay available when the drive is unplugged. This option does not install a background watcher. Set it up separately on each PC where you want the icon; one paired drive is supported per account.
+
+To remove it, delete the **Portable Local AI** desktop shortcut. For replacement and cleanup steps, see [desktop shortcut setup](docs/setup.md#add-a-desktop-shortcut).
+
+</details>
 
 <details>
 <summary><strong>Show a pop-up when I connect the SSD</strong></summary>
@@ -173,7 +195,7 @@ Offline use depends on the installed app and whether the model and runtime are f
 
 Pairing is not tied to a drive brand. Compatible Samsung T5, Samsung T7, SanDisk, and other external SSDs use the same setup steps.
 
-The current source passes **147 automated checks** on Windows PowerShell 5.1 and PowerShell 7. A separate read-only probe passed all seven cache and credential-routing checks against the installed Unsloth backend.
+The current source passes **177 automated checks** on Windows PowerShell 5.1 and PowerShell 7. A separate read-only probe passed all seven cache and credential-routing checks against the installed Unsloth backend.
 
 [Testing and compatibility](docs/testing.md) covers the recorded results, remaining physical tests, and checks to repeat after an Unsloth update.
 

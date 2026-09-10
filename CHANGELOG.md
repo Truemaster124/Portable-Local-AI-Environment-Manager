@@ -1,5 +1,12 @@
 # Changes
 
+## 0.2.1-rc.3 - 2026-09-11
+
+- Add an optional Portable Local AI desktop shortcut with a custom drive-and-play icon. It discovers the paired SSD at launch instead of storing its drive letter.
+- Keep the desktop launcher's files on the host and reuse the existing confirmation and privacy checks. Refuse missing or ambiguous drives and unrelated files at installation destinations.
+- Add a matching README button that opens the launcher source, plus shortcut setup and removal instructions.
+- Expand the automated suite to 177 checks, including native Windows shortcut creation and readback in disposable folders. Physical shortcut acceptance remains on the test checklist.
+
 ## Documentation visuals - 2026-09-11
 
 - Add matching storage and shared-drive privacy illustrations using the existing navy, cyan, and amber theme.

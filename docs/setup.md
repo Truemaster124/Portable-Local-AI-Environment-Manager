@@ -16,6 +16,7 @@ From the source folder, copy these items to the root of the external drive:
 - `Configure-SSD.cmd`
 - `Check-Setup.cmd`
 - `Start-Unsloth-With-T5.cmd`
+- `Create-Desktop-Shortcut.cmd`
 - `Install-T5-Connection-Popup.cmd`
 - `Remove-T5-Connection-Popup.cmd`
 
@@ -46,6 +47,18 @@ The report includes `readyToLaunch` and a `problems` list. The command exits wit
 Next, double-click `Start-Unsloth-With-T5.cmd` and accept the prompt. If a file picker appears, select the **host-installed** `unsloth-studio.exe`, not an old app copy on the SSD. No administrator account is required by the launcher.
 
 If a known private-state directory is redirected through a junction or outside the host profile, stop and review the layout. Do not delete links or move databases just to silence the warning.
+
+### Add a desktop shortcut
+
+Once the paired SSD passes setup checks, run `Create-Desktop-Shortcut.cmd` from its root. It creates **Portable Local AI** on this account's desktop with the project's drive-and-play icon. The existing `.cmd` launcher continues to work as before; Windows gives command files a shared icon.
+
+The shortcut targets a small local copy of the launcher in `%LOCALAPPDATA%\PortableLocalAI-Launcher`. It checks the drive's pairing marker and volume identity when you click it, then runs the usual confirmation and privacy checks. A different drive letter needs no shortcut edit. Connect the SSD first; a missing or ambiguous pairing stops the launch with an explanation.
+
+This installs no watcher and does not launch Unsloth during setup. Run it once per Windows account where you want the icon. Desktop and AppData must be ordinary folders within the local user profile; redirected paths are refused.
+
+Running the same installer again can recreate the shortcut. It refuses to overwrite an unrelated shortcut, another drive's pairing, or a different launcher version. To replace a previous desktop installation, close any launcher prompt, delete the **Portable Local AI** desktop shortcut, and rename `%LOCALAPPDATA%\PortableLocalAI-Launcher` to an unused backup name. Then run the new installer from the paired SSD. Keep the backup until the new shortcut works.
+
+To remove the shortcut, delete it from the desktop. You can also remove its dedicated `%LOCALAPPDATA%\PortableLocalAI-Launcher` folder when no launcher prompt is open. This folder holds only the shortcut's launcher files and pairing, not models or chats. The separate `%LOCALAPPDATA%\PortableLocalAI` folder belongs to the existing session state and optional connection helper; leave that folder in place.
 
 ## 5. Get your first model
 
