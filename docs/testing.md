@@ -1,10 +1,10 @@
 # Testing notes
 
-Last local check: 8 September 2026.
+Latest automated source check: 10 September 2026. The repository cleanup passed all 97 checks under Windows PowerShell 5.1.26100.9444. The installed-backend probe and original prototype results below were recorded on 8 September 2026 and were not rerun for this documentation cleanup.
 
 ## This repository
 
-`tests/Test-Launcher.ps1` passed **97 checks** under Windows PowerShell **5.1.26100.9278**.
+`tests/Test-Launcher.ps1` passed **97 checks** under Windows PowerShell **5.1.26100.9444**.
 
 The checks cover script parsing, malformed configuration, unsafe relative paths, registry path parsing, path construction with several simulated drive letters, child-only credential isolation, preserved offline settings, and direct process configuration without shell interpolation. Module-scoped test doubles exercise wrong-drive rejection, executable-volume rejection, declined consent, the already-running guard and disconnecting during the prompt. Privacy checks cover redirected private state, token-variable removal and blocking launch on preflight failure. One read-only native Windows check resolves the host PowerShell executable's volume.
 
