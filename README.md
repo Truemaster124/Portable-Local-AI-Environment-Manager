@@ -1,7 +1,7 @@
 # Portable Local AI Environment Manager
 
 <p align="center">
-  <img src="docs/assets/portable-ai-banner.png" width="100%" alt="Portable Local AI Environment Manager: an external model drive connected to a prepared Windows PC, with colorful sticker accents">
+  <img src="docs/assets/portable-ai-banner.png" width="100%" alt="Lenovo Legion laptop displaying Unsloth Desktop, connected by a USB-C cable to a blue Samsung T7 Shield SSD on a wooden desk">
 </p>
 
 <p align="center"><sub>Concept illustration: a portable model library connected to a prepared Windows PC.</sub></p>
