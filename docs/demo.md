@@ -37,7 +37,7 @@ Keeping model storage separate from application state. The launcher sets the cac
 
 **What would you improve next?**
 
-A second-machine test matrix, signed releases, better cache-health diagnostics and a reviewed upgrade path for an existing helper. These are future work, not shipped features.
+Launch and model discovery have been reported working on a second Windows laptop with a SanDisk SSD. The next checks are generation, download and deletion, privacy across hosts, and more machine and filesystem combinations. Signed releases, better cache-health diagnostics, and a reviewed helper upgrade path remain future work.
 
 **Did you use AI tools?**
 

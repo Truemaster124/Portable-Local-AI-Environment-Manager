@@ -17,7 +17,7 @@ function Install-ConnectionHelper {
     if (-not (Test-T5Root $sourceRoot $Device)) { throw 'Run the installer from the root of the paired SSD.' }
     Assert-T5HostPrivacy $Device
     if (-not $ConfirmedInstall) {
-        if (-not (Show-T5Message -Question -Message "Install the T5 connection-popup helper for this Windows account?`r`n`r`nIt starts at sign-in and checks for this T5 every 5 seconds. It asks before launching Unsloth. No administrator access is required and no model files, global model settings or accounts are changed.`r`n`r`nUse Remove-T5-Connection-Popup.cmd to disable it. Other PCs need their own one-time installation.")) { return }
+        if (-not (Show-T5Message -Question -Message "Install the SSD connection-popup helper for this Windows account?`r`n`r`nIt starts at sign-in and checks for the paired SSD every 5 seconds. It asks before launching Unsloth. No administrator access is required and no model files, global model settings or accounts are changed.`r`n`r`nUse Remove-T5-Connection-Popup.cmd to disable it. Other PCs need their own one-time installation.")) { return }
     }
     # Consent can stay open while the SSD is removed or replaced.
     if (-not (Test-T5Root $sourceRoot $Device)) { throw 'The paired SSD changed or was disconnected. The helper was not installed.' }
@@ -68,13 +68,13 @@ function Install-ConnectionHelper {
     [IO.File]::WriteAllText((Join-Path $local 'Remove-T5-Connection-Popup.cmd'), $removeCmd, [Text.Encoding]::ASCII)
     # Suppress a popup for the drive already connected during installation.
     Start-Process -FilePath $powershell -ArgumentList ($arguments + ' -SkipPresentOnce') -WindowStyle Hidden | Out-Null
-    Write-Output "Installed per-user T5 helper at $local"
-    if (-not $ConfirmedInstall) { Show-T5Message "Connection popups are enabled for this Windows account. The already-connected drive is not prompted during installation. Double-click Start-Unsloth-With-T5.cmd now, or safely reconnect the T5 later. The helper will also start at your next sign-in." }
+    Write-Output "Installed per-user SSD helper at $local"
+    if (-not $ConfirmedInstall) { Show-T5Message "Connection popups are enabled for this Windows account. The already-connected drive is not prompted during installation. Double-click Start-Unsloth-With-T5.cmd now, or safely reconnect the SSD later. The helper will also start at your next sign-in." }
 }
 
 function Remove-ConnectionHelper {
     param($Device)
-    if (-not (Show-T5Message -Question -Message "Disable T5 connection popups for this Windows account?`r`n`r`nOnly this helper's startup shortcut will be removed. The watcher will stop within a few seconds. Its source files and logs are retained. Models, Unsloth and the SSD launcher will not be removed.")) { return }
+    if (-not (Show-T5Message -Question -Message "Disable SSD connection popups for this Windows account?`r`n`r`nOnly this helper's startup shortcut will be removed. The watcher will stop within a few seconds. Its source files and logs are retained. Models, Unsloth and the SSD launcher will not be removed.")) { return }
     $local = Get-T5LocalDirectory
     $ownershipFile = Join-Path $local 'installed.json'
     Assert-T5PlainPath $ownershipFile
@@ -122,7 +122,7 @@ function Watch-T5Connection {
                     # Debounce an insertion while the filesystem is becoming available.
                     Start-Sleep -Milliseconds 1200
                     if (Test-T5Root $root $Device) {
-                        Write-T5Log "T5 detected at $root; requesting consent."
+                        Write-T5Log "Paired SSD detected at $root; requesting consent."
                         try { Invoke-T5Launch $root $Device -FromWatcher } catch { Write-T5Log $_.Exception.Message; Show-T5Message $_.Exception.Message }
                     }
                 }

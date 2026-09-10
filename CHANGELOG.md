@@ -1,5 +1,14 @@
 # Changes
 
+## 0.2.1-rc.2 - 2026-09-11
+
+- Record Garv's successful second-laptop test with a SanDisk SSD: the connection prompt appeared, accepting it launched Unsloth, and the SSD models appeared under On Device.
+- Read the saved application path as UTF-8. Windows PowerShell could otherwise forget an Unsloth location containing accented characters and ask for it again.
+- Add regression checks for saved app paths containing spaces and accented characters, bringing the automated suite to 147 checks.
+- Use "SSD" in connection prompts and launch errors so the wording fits SanDisk and other drives. Keep existing filenames for compatibility.
+
+The second-laptop report confirms launch and discovery. Remaining physical acceptance checks and the unrecorded test-environment details are listed in `docs/testing.md`.
+
 ## 0.2.1-rc.1 - 2026-09-11
 
 - Add the MIT license and rewrite the README with clearer setup steps, launch options, and expandable help. Keep both existing illustrations unchanged.

@@ -139,7 +139,7 @@ Assert-True $true 'Running Unsloth blocks a competing launch'
     function New-T5StartInfo { throw 'UNSAFE: reached process construction after disconnect' }
     $caught = $false
     try { Invoke-T5Launch ([IO.Path]::GetPathRoot([Environment]::GetFolderPath('Windows'))) $Config }
-    catch { if ($_.Exception.Message -ne 'The T5 was disconnected. Nothing was launched.') { throw }; $caught = $true }
+    catch { if ($_.Exception.Message -ne 'The paired SSD was disconnected. Nothing was launched.') { throw }; $caught = $true }
     if (-not $caught) { throw 'Expected disconnect to stop launch' }
 } $config
 Assert-True $true 'Disconnect while consent is open stops launch'
@@ -248,6 +248,22 @@ foreach ($path in @('C:\folder/../elsewhere','C:\folder.\file','C:\NUL.txt')) {
     Assert-Throws { Assert-T5PlainPath $path } "Reject ambiguous Windows path: $path"
 }
 Assert-True (-not (Test-T5Executable '\\server\apps\unsloth-studio.exe' 'E:\')) 'Reject a network executable before reading it'
+
+foreach ($userName in @('Example User', ('Jos' + [char]0x00E9))) {
+    & $module {
+        param($FixtureRoot, $UserName)
+        $script:appLocationFixture = Join-Path $FixtureRoot 'saved-app-location'
+        [void][IO.Directory]::CreateDirectory($script:appLocationFixture)
+        $script:expectedSavedExe = 'C:\Users\' + $UserName + '\Apps\Unsloth\unsloth-studio.exe'
+        function Get-T5LocalDirectory { $script:appLocationFixture }
+        function Test-T5Executable { param($Path,$Root); $Path -ceq $script:expectedSavedExe }
+        function Get-ChildItem { throw 'A valid saved app path should not require registry discovery' }
+        Write-T5Json (Join-Path $script:appLocationFixture 'app-location.json') @{executable=$script:expectedSavedExe}
+        $found = @(Find-T5Unsloth 'E:\')
+        if ($found.Count -ne 1 -or $found[0] -cne $script:expectedSavedExe) { throw 'Saved application path was not preserved' }
+    } $fixtureRoot $userName
+    Assert-True $true "Reuse the saved Unsloth path for a Windows profile named $userName"
+}
 
 $jsonPath = Join-Path $fixtureRoot 'device.json'
 $unicodeConfig = $example | ConvertFrom-Json

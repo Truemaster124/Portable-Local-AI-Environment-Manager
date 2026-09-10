@@ -14,7 +14,7 @@
   <a href="#get-started">Get started</a> &nbsp;·&nbsp; <a href="#how-it-works">How it works</a> &nbsp;·&nbsp; <a href="#privacy-and-storage">Privacy</a> &nbsp;·&nbsp; <a href="#help-and-documentation">Help</a> &nbsp;·&nbsp; <a href="#license">License</a>
 </p>
 
-**Version 0.2.1-rc.1 · Windows release candidate · [MIT license](LICENSE) · No model weights included**
+**Version 0.2.1-rc.2 · Windows release candidate · [MIT license](LICENSE) · No model weights included**
 
 ## Why I built this
 
@@ -165,9 +165,11 @@ Offline use depends on the installed app and whether the model and runtime are f
 
 ## Project status
 
-This is a **release candidate for testing**. The latest local run passed **145 automated checks** on Windows PowerShell 5.1 and PowerShell 7. A separate read-only probe passed all seven cache and credential-routing checks against the installed Unsloth backend.
+**The launch workflow has now worked on a second Windows laptop with a SanDisk SSD.** After Unsloth was installed, initialized, and closed, connecting the SSD brought up the connection prompt. Accepting it opened Unsloth, and the models on the SSD appeared under **On Device**. This result was reported by Garv on 11 September 2026; the exact launcher build and machine details were not recorded.
 
-Before a production release, the launcher still needs full testing on a second physical PC, a real exFAT drive, and a disposable model's download, load, and deletion. Automated checks alone do not establish that those workflows work on every PC. See [test results and remaining checks](docs/testing.md).
+The current source passes **147 automated checks** on Windows PowerShell 5.1 and PowerShell 7. A separate read-only probe passed all seven cache and credential-routing checks against the installed Unsloth backend.
+
+Version **0.2.1-rc.2** remains a release candidate. Model generation, download and deletion, physical privacy checks, and real-device exFAT testing still need recorded results before a production release. See [what passed and what remains](docs/testing.md).
 
 The original prototype used Unsloth Desktop `0.1.806-beta`. Retest the full workflow after app updates. Network or redirected profiles and nonstandard installation layouts also need separate review.
 

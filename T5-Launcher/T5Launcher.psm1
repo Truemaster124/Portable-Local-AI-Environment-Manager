@@ -1,7 +1,7 @@
 # Custom T5 integration, not Unsloth source code. Compatible with Windows PowerShell 5.1.
 Set-StrictMode -Version Latest
 
-function Get-T5Version { '0.2.1-rc.1' }
+function Get-T5Version { '0.2.1-rc.2' }
 
 function Get-T5MutexName {
     param([ValidateSet('Prompt','Watch')][string]$Purpose)
@@ -244,7 +244,7 @@ function Find-T5Unsloth {
     $saved = Join-Path (Get-T5LocalDirectory) 'app-location.json'
     if (Test-Path -LiteralPath $saved) {
         try {
-            $path = (Get-Content -LiteralPath $saved -Raw | ConvertFrom-Json).executable
+            $path = (Get-Content -LiteralPath $saved -Raw -Encoding UTF8 | ConvertFrom-Json).executable
             if (Test-T5Executable $path $Root) { return $path }
         } catch {}
     }
@@ -347,7 +347,7 @@ function Invoke-T5Launch {
         try { $owned = $guard.WaitOne(0) } catch [Threading.AbandonedMutexException] { $owned = $true }
         if (-not $owned) { return }
         if ($FromWatcher -and -not (Test-T5HelperEnabled $Config)) { return }
-        if (-not (Test-T5Root $Root $Config)) { throw 'The expected T5 model collection is unavailable. No application was started.' }
+        if (-not (Test-T5Root $Root $Config)) { throw 'The paired SSD model library is unavailable. No application was started.' }
         $accepted = Show-T5Message -Question -Message ("Allow Unsloth to access the models on " + $Config.displayName + "?`r`n`r`nModel folder: " + (Join-Path $Root $Config.modelRelativePath) + "`r`n`r`nYes launches this PC's installed Unsloth with that cache for this session. Recognized models should appear under On Device. No model files or chats are copied. Unsloth may access the network and write to its selected cache during normal use, subject to your existing offline settings. Keep the SSD connected while using it.")
         if (-not $accepted) { return }
         if ($FromWatcher -and -not (Test-T5HelperEnabled $Config)) { return }
@@ -367,14 +367,14 @@ function Invoke-T5Launch {
                 $picker.Filter = 'Unsloth Desktop (unsloth-studio.exe)|unsloth-studio.exe'
                 if ($picker.ShowDialog() -ne [Windows.Forms.DialogResult]::OK) { return }
                 $executable = $picker.FileName
-                if (-not (Test-T5Executable $executable $Root)) { throw 'Select a local installed unsloth-studio.exe, not an application copy on the T5.' }
+                if (-not (Test-T5Executable $executable $Root)) { throw 'Select a local installed unsloth-studio.exe, not an application copy on the SSD.' }
                 $local = Get-T5LocalDirectory
                 [void][IO.Directory]::CreateDirectory($local)
                 Write-T5Json (Join-Path $local 'app-location.json') @{executable=$executable}
             } finally { $picker.Dispose() }
         }
         # Recheck after any dialog: the drive can be unplugged while a prompt is open.
-        if (-not (Test-T5Root $Root $Config)) { throw 'The T5 was disconnected. Nothing was launched.' }
+        if (-not (Test-T5Root $Root $Config)) { throw 'The paired SSD was disconnected. Nothing was launched.' }
         if (@(Get-T5RunningUnsloth).Count -gt 0) { throw 'Unsloth started while the dialog was open. Close it and retry.' }
         if ($FromWatcher -and -not (Test-T5HelperEnabled $Config)) { return }
         if (-not (Test-T5Executable $executable $Root)) { throw 'The selected Unsloth executable is no longer a valid local installation.' }
