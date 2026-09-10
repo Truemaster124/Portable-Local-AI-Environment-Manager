@@ -1,5 +1,9 @@
 # Privacy when two people share the drive
 
+<p align="center">
+  <img src="assets/privacy-shared-drive.png" width="100%" alt="Two people take turns using one Samsung T7 Shield model library on separate Lenovo Legion PCs. Each PC keeps its own chats and credentials. Eject before handing over the drive; anything exported to the SSD is shared too.">
+</p>
+
 ## The intended boundary
 
 Person A uses the SSD on PC A, ejects it, and gives it to person B on PC B. Both can see the shared model library. Person B should not receive person A's conversations merely by launching with that library.
@@ -33,6 +37,8 @@ It also does not encrypt the drive, hide files from its owner, prevent an applic
 Unsloth can retain chats, account information, uploaded files and other state locally after the SSD is removed. The launcher also retains local diagnostics and caches. There is no automatic logout or cleanup on ejection.
 
 On a shared PC, use separate Windows accounts. Reusing the same Windows account can show the previous local user's chats even though the SSD carried none. Cloud/account synchronization is another possible route for history; this launcher does not control it.
+
+[See the storage overview in the README](../README.md#privacy-and-storage).
 
 ## How to verify the two-computer boundary
 

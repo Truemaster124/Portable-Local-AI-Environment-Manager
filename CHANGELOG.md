@@ -1,5 +1,11 @@
 # Changes
 
+## Documentation visuals - 2026-09-11
+
+- Add matching storage and shared-drive privacy illustrations using the existing navy, cyan, and amber theme.
+- Replace the old SSD reference photograph with the supplied Samsung T7 Shield product image.
+- Simplify the credits and clarify which third-party images and marks are outside the code license.
+
 ## 0.2.1-rc.2 - 2026-09-11
 
 - Record Garv's successful second-laptop test with a SanDisk SSD: the connection prompt appeared, accepting it launched Unsloth, and the SSD models appeared under On Device.

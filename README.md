@@ -113,6 +113,10 @@ To disable prompts, run `Remove-T5-Connection-Popup.cmd`. It removes the helper'
 
 The SSD holds your model library and cache metadata. The launcher keeps known chat, account, credential, temporary-file, and project-default locations on the current PC. It leaves existing local chats in place and stops the launch if those location checks fail.
 
+<p align="center">
+  <img src="docs/assets/privacy-and-storage.png" width="100%" alt="A Samsung T7 Shield holds the model library and Hub cache; the connected Lenovo Legion PC keeps known chat, credential, project, and temporary-file locations on the host. Files deliberately exported to the SSD travel with it.">
+</p>
+
 Anything you deliberately save or export to the SSD still travels with it. The launcher does not encrypt the drive, block network access, or control cloud synchronization. Check for private datasets, credentials, exports, and backups before lending the drive to someone else.
 
 On a shared PC, use separate Windows accounts. Sharing a Windows account can expose the chats already stored on that computer.
@@ -190,16 +194,16 @@ The tests do not launch Unsloth, install the helper, or modify a model drive. Th
 
 ## Credits
 
-Created by **Garv Gupta**, with AI assistance. Unsloth and Hugging Face provide the application and model infrastructure used by the launcher. The banner and workflow are AI-assisted illustrations.
+Created by **Garv Gupta**. Unsloth and Hugging Face provide the application and model infrastructure used by the launcher.
 
 <details>
-<summary>Original SSD photograph and attribution</summary>
+<summary>Samsung T7 Shield reference image</summary>
 
 <p align="center">
-  <img src="docs/assets/samsung-t5.jpg" width="560" alt="A Samsung T5 external SSD, the drive used in the original project">
+  <img src="docs/assets/samsung-t7-shield.jpg" width="100%" alt="Samsung T7 Shield portable SSDs in blue, cream, and black">
 </p>
 
-<p align="center"><sub>Photo by <a href="https://www.flickr.com/people/87296837@N00">Tony Webster</a>, via <a href="https://commons.wikimedia.org/wiki/File:Samsung_T5_Portable_External_SSD_(Solid_State_Drive)_(43544308485).jpg">Wikimedia Commons</a> · <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a> · Image unchanged</sub></p>
+<p align="center"><sub>Product reference supplied for this README. A Samsung drive is not required; the launcher also works with other compatible SSDs.</sub></p>
 
 </details>
 
@@ -207,6 +211,6 @@ Created by **Garv Gupta**, with AI assistance. Unsloth and Hugging Face provide 
 
 The original launcher code and documentation are available under the [MIT License](LICENSE). You can use, modify, and share them, including commercially, as long as you keep the copyright and license notice. The software is provided without warranty.
 
-This license does not replace the terms for Unsloth, Hugging Face libraries, downloaded models, or third-party material. The SSD photograph above remains under **CC BY 2.0**. Third-party logos and interface elements shown in the illustrations belong to their respective owners and are not licensed by this project.
+This license does not replace the terms for Unsloth, Hugging Face libraries, downloaded models, or third-party material. The Samsung product image, third-party logos, and interface elements belong to their respective owners and are not covered by this project's MIT license. Their appearance does not imply endorsement.
 
 [Back to top](#portable-local-ai-environment-manager)
