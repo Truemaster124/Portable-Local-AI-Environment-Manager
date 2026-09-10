@@ -436,8 +436,13 @@ try {
     Assert-True ($wrapperOutput.GetAwaiter().GetResult() -match 'readyToLaunch') 'CMD wrapper invokes diagnostics from a path containing spaces'
 } finally { $wrapperProcess.Dispose() }
 
-& $module {
+$launchChecks = & $module {
     param($Config,$FixtureRoot)
+    # Keep module assertions local: CI invokes this test from a wrapper script.
+    function Confirm-LaunchCheck([bool]$Condition, [string]$Name) {
+        if (-not $Condition) { throw "FAIL: $Name" }
+        $Name
+    }
     $script:launchFixture = Join-Path $FixtureRoot 'successful-launch'
     $script:starts = 0
     $script:processDisposed = $false
@@ -465,15 +470,18 @@ try {
     }
     $testRoot = [IO.Path]::GetPathRoot([Environment]::GetFolderPath('Windows'))
     Invoke-T5Launch $testRoot $Config
-    Assert-True ($script:starts -eq 1 -and -not $script:startedInfo.UseShellExecute) 'Accepted launch reaches the process boundary once without shell execution'
+    Confirm-LaunchCheck ($script:starts -eq 1 -and -not $script:startedInfo.UseShellExecute) 'Accepted launch reaches the process boundary once without shell execution'
     $record = Get-Content -LiteralPath (Join-Path $script:launchFixture 'last-launch.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-    Assert-True ($record.modelCache -eq [IO.Path]::Combine($testRoot,$Config.modelRelativePath)) 'A successful launch records the selected cache path'
-    Assert-True $script:processDisposed 'Launch releases its process handle without stopping the application'
+    Confirm-LaunchCheck ($record.modelCache -eq [IO.Path]::Combine($testRoot,$Config.modelRelativePath)) 'A successful launch records the selected cache path'
+    Confirm-LaunchCheck $script:processDisposed 'Launch releases its process handle without stopping the application'
     function Write-T5Json { param($Path,$Value); throw 'Simulated locked launch record' }
     Invoke-T5Launch $testRoot $Config -WarningAction SilentlyContinue
-    Assert-True ($script:starts -eq 2) 'A launch-record failure does not report an already-started app as a launch failure'
+    Confirm-LaunchCheck ($script:starts -eq 2) 'A launch-record failure does not report an already-started app as a launch failure'
     function Test-T5Executable { param($Path,$Root); $false }
-    Assert-Throws { Invoke-T5Launch $testRoot $Config } 'An executable that becomes invalid after consent is rejected'
-    Assert-True ($script:starts -eq 2) 'Invalid executable recheck never reaches process creation'
+    $invalidExecutableRejected = $false
+    try { Invoke-T5Launch $testRoot $Config } catch { $invalidExecutableRejected = $true }
+    Confirm-LaunchCheck $invalidExecutableRejected 'An executable that becomes invalid after consent is rejected'
+    Confirm-LaunchCheck ($script:starts -eq 2) 'Invalid executable recheck never reaches process creation'
 } $config $fixtureRoot
+foreach ($name in $launchChecks) { Assert-True $true $name }
 Write-Output "`n$script:passed checks passed on PowerShell $($PSVersionTable.PSVersion). No Unsloth process started and no helper installed."
