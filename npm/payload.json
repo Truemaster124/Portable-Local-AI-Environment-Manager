@@ -1,0 +1,15 @@
+[
+  "T5-Launcher/Configure-SSD.ps1",
+  "T5-Launcher/Create-Desktop-Shortcut.ps1",
+  "T5-Launcher/T5Launcher.ps1",
+  "T5-Launcher/T5Launcher.psm1",
+  "T5-Launcher/device.example.json",
+  "T5-Launcher/portable-ai.ico",
+  "Check-Setup.cmd",
+  "Configure-SSD.cmd",
+  "Create-Desktop-Shortcut.cmd",
+  "Install-T5-Connection-Popup.cmd",
+  "Remove-T5-Connection-Popup.cmd",
+  "Start-Unsloth-With-T5.cmd",
+  "LICENSE"
+]

@@ -29,6 +29,7 @@ Cache/
 venv/
 __pycache__/
 node_modules/
+*.tgz
 *.safetensors
 *.gguf
 *.ggml

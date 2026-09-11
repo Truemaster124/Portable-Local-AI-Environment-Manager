@@ -1,0 +1,46 @@
+{
+  "name": "portable-local-ai-environment-manager",
+  "version": "0.3.0-rc.1",
+  "description": "Windows CLI for pairing an external model SSD and launching a local Unsloth Desktop installation.",
+  "license": "MIT",
+  "author": "Garv Gupta",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Truemaster124/Portable-Local-AI-Environment-Manager.git"
+  },
+  "homepage": "https://github.com/Truemaster124/Portable-Local-AI-Environment-Manager#readme",
+  "bugs": { "url": "https://github.com/Truemaster124/Portable-Local-AI-Environment-Manager/issues" },
+  "bin": { "portable-ai": "bin/portable-ai.cjs" },
+  "engines": { "node": ">=22" },
+  "os": ["win32"],
+  "files": [
+    "bin/portable-ai.cjs",
+    "lib/cli.cjs",
+    "npm/Invoke-Npm.ps1",
+    "npm/NpmInstaller.psm1",
+    "npm/payload.json",
+    "T5-Launcher/Configure-SSD.ps1",
+    "T5-Launcher/Create-Desktop-Shortcut.ps1",
+    "T5-Launcher/T5Launcher.ps1",
+    "T5-Launcher/T5Launcher.psm1",
+    "T5-Launcher/device.example.json",
+    "T5-Launcher/portable-ai.ico",
+    "Check-Setup.cmd",
+    "Configure-SSD.cmd",
+    "Create-Desktop-Shortcut.cmd",
+    "Install-T5-Connection-Popup.cmd",
+    "Remove-T5-Connection-Popup.cmd",
+    "Start-Unsloth-With-T5.cmd",
+    "docs/*.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "test": "node --test tests/cli.test.cjs tests/npm-installer.test.cjs tests/npm-bridge.test.cjs",
+    "test:launcher": "node scripts/test-launcher.cjs",
+    "test:package": "node scripts/test-package.cjs",
+    "prepack": "npm test",
+    "prepublishOnly": "npm test && npm run test:launcher && npm run test:package"
+  },
+  "publishConfig": { "access": "public", "tag": "next" },
+  "keywords": ["windows", "cli", "unsloth", "local-ai", "ssd", "portable"]
+}

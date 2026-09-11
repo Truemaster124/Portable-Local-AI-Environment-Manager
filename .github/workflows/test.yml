@@ -3,6 +3,23 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 jobs:
+  npm-windows:
+    name: npm CLI on Node ${{ matrix.node }}
+    runs-on: windows-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci
+      - run: npm test
+      - run: npm run test:package
   windows-powershell:
     name: Windows PowerShell 5.1
     runs-on: windows-latest

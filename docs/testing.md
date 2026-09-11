@@ -1,6 +1,17 @@
 # Testing notes
 
-Latest local validation: **11 September 2026**, for **0.2.1-rc.3**. A successful second-laptop launch and model-discovery test has also been reported. The remaining acceptance checks are listed below.
+Latest npm adapter validation: **11 September 2026**, package **0.3.0-rc.1**, preserving Windows runtime **0.2.1-rc.3**. The original runtime checks passed on Windows PowerShell 5.1 and PowerShell 7. A previously reported second-laptop launch predates this npm adapter; physical acceptance of the new installation route remains pending.
+
+## npm adapter checks
+
+- `npm test`: 62 Node test cases pass, including a PowerShell fixture suite with 40 assertions. Covers CLI errors, OS/runtime guards, shell-free argument transport, exit codes, existing pairings, no unattended setup, payload conflicts, matching copies, retained files, junction rejection, and the real system-volume refusal path.
+- `npm run test:launcher`: the original 177 checks pass. Also run directly under PowerShell 7.6.5, with 177 checks passing.
+- `npm run test:package`: packs an actual tarball, verifies its file allowlist, installs into disposable global prefixes, runs CMD and PowerShell shims, checks the installed backend, runs offline `npm exec`, and uninstalls from those prefixes. npm 11.16.0 and Node.js 24.18.0 were used locally.
+- CI includes Node.js 22 and 24 on Windows. Node.js 22 CI is configured but was not run locally.
+
+The npm tests use disposable folders and mocked drive operations where needed. They do not format or pair a physical SSD, start a real Unsloth process, install a real startup helper, or generate from a model. Test those flows on a spare SSD before treating this release candidate as stable. The filesystem-copy tests do exercise actual files and junctions inside their fixtures.
+
+`test-results` contains disposable test state and is excluded from Git and the npm package. The tarball includes no device pairing, credentials, model weights, test fixtures, or large documentation images. See [npm.md](npm.md) for the maintainer and replacement procedures, including the observed npm CMD shortcut limitation for installation prefixes containing ampersands.
 
 ## Second-laptop test — reported by Garv
 

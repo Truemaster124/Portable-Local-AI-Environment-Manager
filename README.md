@@ -16,6 +16,23 @@
 
 **Version 0.2.1-rc.3 · Windows release candidate · [MIT license](LICENSE) · No model weights included**
 
+## Install with npm
+
+The optional **npm CLI (0.3.0-rc.1)** adds `portable-ai` commands for setup, diagnostics, launch, desktop shortcuts, and connection popups. It uses the existing Windows launcher; the ZIP workflow below is still available.
+
+Requires **Windows, Node.js 22 or newer with npm, Windows PowerShell 5.1, and a working Unsloth Desktop installation**. Install directly from this GitHub repository:
+
+```powershell
+npm.cmd install --global "https://github.com/Truemaster124/Portable-Local-AI-Environment-Manager/archive/refs/heads/main.tar.gz"
+portable-ai.cmd setup --drive E:
+portable-ai.cmd check --drive E:
+portable-ai.cmd launch --drive E:
+```
+
+Replace `E:` with your SSD's current drive letter. Setup displays the drive and cache path and asks you to type **PAIR**. It preserves existing pairings and model files and refuses to overwrite different launcher files. Installing the npm package alone does not start Unsloth or enable a background helper.
+
+The package is **not yet published to the npm registry**; use the GitHub install command above. This release remains Windows-only. See the [npm guide](docs/npm.md) for options, updates, troubleshooting, and publishing instructions.
+
 ## Why I built this
 
 My local AI models were filling up my internal drive, so I moved them to a Samsung T7. That freed up space, but I still had to point the apps at the right folder. Moving the SSD to another computer could change its drive letter and break those paths.

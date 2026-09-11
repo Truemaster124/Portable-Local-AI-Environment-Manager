@@ -1,5 +1,14 @@
 # Changes
 
+## npm 0.3.0-rc.1 - 2026-09-11
+
+- Add a dependency-free npm package and `portable-ai` CLI for setup, diagnostics, launch, desktop shortcut, and optional connection-popup management.
+- Preserve the existing Windows runtime (`0.2.1-rc.3`) and ZIP workflow unchanged.
+- Validate the destination volume, check all payload conflicts before copying, preserve pairing/model files, and reject mismatched SSD runtime scripts.
+- Pass CLI input as JSON data to Windows PowerShell and avoid inherited PowerShell 7 module-path conflicts.
+- Add npm unit/installer tests, a real tarball/global-install/npx/uninstall smoke test, Windows Node CI, and maintainer documentation.
+- Package is an unpublished Windows-only release candidate; physical SSD setup and model generation through the new npm route still need acceptance testing.
+
 ## 0.2.1-rc.3 - 2026-09-11
 
 - Add an optional Portable Local AI desktop shortcut with a custom drive-and-play icon. It discovers the paired SSD at launch instead of storing its drive letter.
